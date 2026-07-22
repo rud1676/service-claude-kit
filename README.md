@@ -174,3 +174,7 @@ SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./install.sh myproject
 - 스킬: `_templates/SKILL.md` → `base/skills/<이름>/SKILL.md` 로 복사해 채운다.
 
 베이스를 개선하면 git 커밋 → 다음 프로젝트부터 반영된다. 이미 설치된 프로젝트는 독립 복사본이라 자동 반영되지 않으니, 필요하면 다시 `install.sh`(병합·시드는 없을 때만 생성이라 안전).
+
+## 라이선스 (License)
+
+MIT. 자세한 내용은 [LICENSE](./LICENSE)를 참고한다.
