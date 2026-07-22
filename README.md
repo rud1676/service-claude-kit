@@ -28,16 +28,17 @@ Claude Code 타겟. 여기서 베이스를 관리하고, 각 프로젝트에는 
 
 ## 사용법
 
-새 프로젝트에 베이스 설치:
+프로젝트 이름만 주면 현재 위치에 `./<이름>` 폴더를 만들고(없으면) 베이스를 설치한다:
 
 ```bash
-./install.sh /path/to/project
+./install.sh myproject          # ./myproject 생성 + 설치
+./install.sh /abs/path/proj     # 절대 경로도 그대로 동작
 ```
 
 이미 있는 파일까지 덮어쓰려면:
 
 ```bash
-./install.sh /path/to/project --force
+./install.sh myproject --force
 ```
 
 설치 후, 각 프로젝트의 `.claude/` 안에서 파일들의 `프로젝트 커스터마이징` 주석 부분을 그 프로젝트에 맞게 채운다.
