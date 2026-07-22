@@ -1,5 +1,7 @@
 # service-claude-kit
 
+[![skills.sh](https://skills.sh/b/rud1676/service-claude-kit)](https://skills.sh/rud1676/service-claude-kit)
+
 **실제로 운영할, 그리고 이미 운영 중인 서비스를 AI와 함께 개발하기 위한 Claude Code 워크스페이스 베이스.**
 AI가 운영 코드에 코드를 쏟아내도, 개발자가 **통제권과 이해**를 놓지 않게 한다.
 
