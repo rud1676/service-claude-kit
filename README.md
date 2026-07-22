@@ -23,7 +23,7 @@ AI 코딩은 "일단 만들어줘"로 시작할 수 있다. 하지만 대상이 
 프로젝트 이름을 주면 `./<이름>` 폴더를 만들고(없으면) 워크스페이스를 설치한다. 설치 중 환경을 물어보고, **답에 맞는 스킬만·맞는 모양으로** 깔아준다.
 
 ```bash
-./install.sh myproject
+./scripts/install.sh myproject
 ```
 
 설치 중 두 가지를 묻는다:
@@ -39,11 +39,21 @@ AI 코딩은 "일단 만들어줘"로 시작할 수 있다. 하지만 대상이 
 비대화(CI/스크립트) 환경에서는 질문을 건너뛰고 아무것도 제거하지 않는 기본값(`jira` + `remote`)으로 설치한다. 환경변수로 지정할 수도 있다:
 
 ```bash
-SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./install.sh myproject
-./install.sh myproject --force   # 이미 있는 .claude/ 파일까지 덮어씀
+SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./scripts/install.sh myproject
+./scripts/install.sh myproject --force   # 이미 있는 .claude/ 파일까지 덮어씀
 ```
 
 설치 후, 각 스킬 파일의 `프로젝트 커스터마이징` 주석(cloudId·프로젝트키·DDNS·포트 등 **인스턴스 비밀값**)을 채운다. 이 값들은 설치가 대신 주입하지 않는다 — 한 번 직접 채우는 편이 안전하다. 훅은 `python3`가 있어야 동작한다.
+
+### 다른 채널 — skills.sh (개별 스킬만)
+
+스킬 정본이 최상위 `skills/`에 있어, [skills.sh](https://skills.sh)/[`vercel-labs/skills`](https://github.com/vercel-labs/skills) CLI로 **개별 스킬만** 가져갈 수도 있다:
+
+```bash
+npx skills add rud1676/service-claude-kit
+```
+
+단, 이 채널은 **`SKILL.md`만** 설치한다 — `install.sh`가 하는 **훅 배선·`CLAUDE.md` 규칙 주입·워크스페이스 폴더(wiki/decision-log/repository) 스캐폴딩은 하지 않는다.** 그리고 `worktree`·`jiraticket`·`figma-depth-find`는 이 워크스페이스 구조와 `CLAUDE.md` 규칙에 엮여 있어, 낱개로 설치하면 반쪽만 동작한다. **풀 킷 경험은 `install.sh`가 정본**이고, skills.sh는 "스킬만 떼어 보고 싶을 때"의 보조 채널로 둔다.
 
 ## 왜 이 스킬들이 필요한가 (Why These Skills Exist)
 
@@ -53,13 +63,13 @@ SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./install.sh myproject
 
 **문제**: 에이전트가 메인 체크아웃에 바로 손대면, 검증 전 변경이 다른 작업과 섞이고 회귀가 조용히 들어온다. 운영 코드에서는 이 비용이 크다.
 
-**해결**: [`worktree`](./base/skills/worktree/SKILL.md). 격리된 git 워크트리 안에서만 수정하고 → `lint`/`build`로 검증하고 → **`reviewer` 자가검토 게이트에서 사람이 고칠 것을 고르고** → PR로만 반영한다. AI가 main을 직접 건드리지 않는다. (환경 맞게 고쳐 쓰는 참고 구현)
+**해결**: [`worktree`](./skills/worktree/SKILL.md). 격리된 git 워크트리 안에서만 수정하고 → `lint`/`build`로 검증하고 → **`reviewer` 자가검토 게이트에서 사람이 고칠 것을 고르고** → PR로만 반영한다. AI가 main을 직접 건드리지 않는다. (환경 맞게 고쳐 쓰는 참고 구현)
 
 ### #2: AI가 쏟아내니 "왜 이렇게 됐는지"를 못 따라간다 (인지 부채)
 
 **문제**: diff를 쓱 훑고 "이해했다"고 넘어가지만, 그건 대개 *낯익음*을 *이해*로 착각한 것이다. 이해 없이 위임만 쌓이면 자기 코드의 흐름에 낄 수 없게 된다.
 
-**해결**: [`explain`](./base/skills/explain/SKILL.md). 코드만 봐선 안 보이는 것 — 왜 이 결정인가 / 무엇을 버렸나 / 무슨 가정인가 / 어디까지 영향인가 — 을 복원해 `wiki/`에 남긴다. AI의 생산 속도에 인간의 이해 속도를 맞추는 브레이크.
+**해결**: [`explain`](./skills/explain/SKILL.md). 코드만 봐선 안 보이는 것 — 왜 이 결정인가 / 무엇을 버렸나 / 무슨 가정인가 / 어디까지 영향인가 — 을 복원해 `wiki/`에 남긴다. AI의 생산 속도에 인간의 이해 속도를 맞추는 브레이크.
 
 ### #3: 요구사항이 바뀔 때 낡은 전제로 추측한다
 
@@ -71,19 +81,19 @@ SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./install.sh myproject
 
 **문제**: 들어온 요구사항을 머리로만 관리하면, 실제 브랜치·커밋·PR과 티켓이 어긋나고 무엇을 왜 바꿨는지 추적이 끊긴다.
 
-**해결**: [`jiraticket`](./base/skills/jiraticket/SKILL.md) / [`issue-mgmt`](./base/skills/issue-mgmt/SKILL.md). 티켓 조회 → 선택 → (코드 근거로) 분석 → `worktree`로 구현까지 한 흐름으로 잇고, 브랜치·커밋·PR을 티켓 키로 연결한다.
+**해결**: [`jiraticket`](./skills/jiraticket/SKILL.md) / [`issue-mgmt`](./skills/issue-mgmt/SKILL.md). 티켓 조회 → 선택 → (코드 근거로) 분석 → `worktree`로 구현까지 한 흐름으로 잇고, 브랜치·커밋·PR을 티켓 키로 연결한다.
 
 ### #5: 시안이 우리 기존 컴포넌트와 무관하게 구현돼 중복·불일치가 쌓인다
 
 **문제**: 디자인 시안을 그대로 새로 구현하면, 이미 있는 컴포넌트와 중복되거나 스타일이 어긋난다. 운영 UI에서는 이 불일치가 곧 부채다.
 
-**해결**: [`figma-depth-find`](./base/skills/figma-depth-find/SKILL.md). 여러 sub-agent가 큰 Figma 프레임을 깊게 탐색하고(truncate되면 자식으로 재귀), 그 화면을 **우리 코드베이스의 실제 컴포넌트로 매핑**한다. 재사용/부분매칭/신규(갭)로 분류해, 정말 없는 것만 새로 만든다.
+**해결**: [`figma-depth-find`](./skills/figma-depth-find/SKILL.md). 여러 sub-agent가 큰 Figma 프레임을 깊게 탐색하고(truncate되면 자식으로 재귀), 그 화면을 **우리 코드베이스의 실제 컴포넌트로 매핑**한다. 재사용/부분매칭/신규(갭)로 분류해, 정말 없는 것만 새로 만든다.
 
 ### #6: 프로젝트마다 비슷한 스킬 베이스를 매번 새로 만들게 된다
 
 **문제**: 새 프로젝트를 시작할 때마다 엇비슷한 규칙·스킬·폴더 구조를 처음부터 다시 세팅한다. 그러면서 미묘하게 달라져 일관성도 잃는다.
 
-**해결**: **인터랙티브 [`install.sh`](./install.sh)**. 환경(PM 툴·로컬/원격)을 물어보고 맞는 스킬만·맞는 모양으로 깔고, `CLAUDE.md` 작업 규칙·훅 배선·워크스페이스 폴더를 일관되게 세팅한다. 베이스를 개선하면 다음 프로젝트부터 반영된다.
+**해결**: **인터랙티브 [`install.sh`](./scripts/install.sh)**. 환경(PM 툴·로컬/원격)을 물어보고 맞는 스킬만·맞는 모양으로 깔고, `CLAUDE.md` 작업 규칙·훅 배선·워크스페이스 폴더를 일관되게 세팅한다. 베이스를 개선하면 다음 프로젝트부터 반영된다.
 
 ## 개념 정리
 
@@ -99,29 +109,30 @@ SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./install.sh myproject
 ### 구성 요소
 
 - **서브에이전트 (`base/agents/*.md`)** — 격리된 컨텍스트에서 일을 대신 수행하고 결과만 반환하는 대리인(reviewer·frontend·explainer). frontmatter의 `model`로 도는 모델을 바꾼다.
-- **스킬 (`base/skills/*/SKILL.md`)** — 메인 에이전트가 필요할 때 읽어 따르는 절차/노하우. 메인 모델로 실행되므로 `model` 지정은 무의미.
-- **훅 (`base/hooks/*.py`)** — 특정 이벤트(프롬프트 제출·도구 사용·응답 종료)마다 자동 실행되는 스크립트. 사람·에이전트 개입 없이 배경에서 돈다.
+- **스킬 (`skills/*/SKILL.md`)** — 메인 에이전트가 필요할 때 읽어 따르는 절차/노하우. 메인 모델로 실행되므로 `model` 지정은 무의미.
+- **훅 (`scripts/hooks/*.py`)** — 특정 이벤트(프롬프트 제출·도구 사용·응답 종료)마다 자동 실행되는 스크립트. 사람·에이전트 개입 없이 배경에서 돈다.
 
 ## 구조 (이 repo)
 
 ```
 .
-├── install.sh              # 대상 프로젝트에 워크스페이스를 설치(환경 질문 포함)
-├── base/                   # 모든 프로젝트에 깔리는 공통 베이스
+├── skills/                 # 스킬(절차/노하우) → .claude/skills/  (최상위 = skills.sh 발견 위치)
+│   ├── issue-mgmt/         # 이슈/티켓 관리 절차
+│   ├── explain/            # 변경/신규 코드를 '참여'용으로 이해·기록
+│   ├── jiraticket/         # Jira 티켓 조회·선택 → 분석 → worktree로 구현 위임
+│   ├── worktree/           # git 워크트리 기반 수정→검증→커밋→PR (공용 구현 절차)
+│   └── figma-depth-find/   # 큰 Figma 프레임을 멀티에이전트로 탐색·우리 컴포넌트 매핑
+├── scripts/                # 이 repo의 스크립트 모음
+│   ├── install.sh          # 대상 프로젝트에 워크스페이스를 설치(환경 질문 포함)
+│   └── hooks/              # 세션 추적 훅(python) → 설치 시 .claude/hooks/로 복사
+│       ├── context-checkpoint.py  # N프롬프트마다 wiki 갱신 리마인더
+│       ├── log-read.py            # Read/Grep/Glob 기록 → claude-log/
+│       └── summarize-session.py   # 세션 요약·토큰·참고문서·탐색집계 → claude-log/
+├── base/                   # install.sh가 target .claude/에 넣는 나머지(비-스크립트)
 │   ├── agents/             # 서브에이전트(역할 페르소나) → .claude/agents/
 │   │   ├── reviewer.md     # 코드 리뷰어 (읽기 전용)
 │   │   ├── frontend.md     # 프론트엔드 작업자
 │   │   └── explainer.md    # 코드 설명자 (읽기 전용)
-│   ├── skills/             # 스킬(절차/노하우) → .claude/skills/
-│   │   ├── issue-mgmt/     # 이슈/티켓 관리 절차
-│   │   ├── explain/        # 변경/신규 코드를 '참여'용으로 이해·기록
-│   │   ├── jiraticket/     # Jira 티켓 조회·선택 → 분석 → worktree로 구현 위임
-│   │   ├── worktree/       # git 워크트리 기반 수정→검증→커밋→PR (공용 구현 절차)
-│   │   └── figma-depth-find/ # 큰 Figma 프레임을 멀티에이전트로 탐색·우리 컴포넌트 매핑
-│   ├── hooks/              # 세션 추적 훅(python) → .claude/hooks/
-│   │   ├── context-checkpoint.py  # N프롬프트마다 wiki 갱신 리마인더
-│   │   ├── log-read.py            # Read/Grep/Glob 기록 → claude-log/
-│   │   └── summarize-session.py   # 세션 요약·토큰·참고문서·탐색집계 → claude-log/
 │   ├── settings.hooks.json # 훅 배선(설치 시 .claude/settings.json에 안전 병합)
 │   └── CLAUDE.block.md     # 프로젝트 CLAUDE.md에 주입할 관리 규칙(마커 블록)
 └── _templates/             # 새 역할 만들 때 복사용 뼈대 (agent.md · SKILL.md)
@@ -171,7 +182,7 @@ SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./install.sh myproject
 ## 새 역할 추가하기
 
 - 서브에이전트: `_templates/agent.md` → `base/agents/<이름>.md` 로 복사해 채운다.
-- 스킬: `_templates/SKILL.md` → `base/skills/<이름>/SKILL.md` 로 복사해 채운다.
+- 스킬: `_templates/SKILL.md` → `skills/<이름>/SKILL.md` 로 복사해 채운다.
 
 베이스를 개선하면 git 커밋 → 다음 프로젝트부터 반영된다. 이미 설치된 프로젝트는 독립 복사본이라 자동 반영되지 않으니, 필요하면 다시 `install.sh`(병합·시드는 없을 때만 생성이라 안전).
 

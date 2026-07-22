@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # service-claude-kit 설치 스크립트
 #
-# 이 repo의 base/ 아래 서브에이전트(agents)와 스킬(skills)을
+# 최상위 skills/ 의 스킬, base/agents 의 서브에이전트, scripts/hooks 의 훅을
 # 대상 프로젝트의 .claude/ 로 "복사"한다.
 # 복사이므로, 프로젝트마다 독립적으로 커스터마이징해도 원본 repo에 영향이 없다.
 #
@@ -13,18 +13,22 @@
 # 상대 경로는 "이 스크립트를 실행한 현재 위치" 기준으로 해석되고,
 # 해당 폴더가 없으면 새로 만든다.
 #
-# 사용법:
-#   ./install.sh myproject          # ./myproject 를 만들고(없으면) 베이스 설치(질문 포함)
-#   ./install.sh myproject --force  # 이미 있는 파일도 덮어씀
-#   ./install.sh /abs/path/proj     # 절대 경로도 그대로 동작
+# 사용법(repo 루트에서 실행):
+#   ./scripts/install.sh myproject          # ./myproject 를 만들고(없으면) 베이스 설치(질문 포함)
+#   ./scripts/install.sh myproject --force  # 이미 있는 파일도 덮어씀
+#   ./scripts/install.sh /abs/path/proj     # 절대 경로도 그대로 동작
 #
 # 비대화(스크립트/CI) 환경에서는 질문을 건너뛰고 기본값(jira + remote,
 # 즉 아무것도 제거하지 않음)으로 설치한다. 환경변수로 지정할 수도 있다:
-#   SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./install.sh myproject
+#   SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./scripts/install.sh myproject
 set -euo pipefail
 
+# 이 스크립트는 scripts/ 안에 있으므로, repo 루트는 한 단계 위다.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="$SCRIPT_DIR/base"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+BASE_DIR="$REPO_ROOT/base"        # agents · settings.hooks.json · CLAUDE.block.md
+SKILLS_DIR="$REPO_ROOT/skills"    # 최상위 스킬 정본(skills.sh 발견 위치)
+HOOKS_DIR="$SCRIPT_DIR/hooks"     # scripts/hooks
 
 NAME="${1:-}"
 FORCE="${2:-}"
@@ -93,12 +97,12 @@ if [[ -d "$BASE_DIR/agents" ]]; then
   rsync "${RSYNC_OPTS[@]}" "$BASE_DIR/agents/" "$DEST/agents/"
   copied=1
 fi
-if [[ -d "$BASE_DIR/skills" ]]; then
-  rsync "${RSYNC_OPTS[@]}" "$BASE_DIR/skills/" "$DEST/skills/"
+if [[ -d "$SKILLS_DIR" ]]; then
+  rsync "${RSYNC_OPTS[@]}" "$SKILLS_DIR/" "$DEST/skills/"
   copied=1
 fi
-if [[ -d "$BASE_DIR/hooks" ]]; then
-  rsync "${RSYNC_OPTS[@]}" "$BASE_DIR/hooks/" "$DEST/hooks/"
+if [[ -d "$HOOKS_DIR" ]]; then
+  rsync "${RSYNC_OPTS[@]}" "$HOOKS_DIR/" "$DEST/hooks/"
   chmod +x "$DEST/hooks/"*.py 2>/dev/null || true
   copied=1
 fi
@@ -318,6 +322,6 @@ if [[ "$copied" -eq 1 ]]; then
     echo "(이미 존재하던 파일은 보존했습니다. 덮어쓰려면 --force)"
   fi
 else
-  echo "복사할 base/agents 또는 base/skills가 없습니다." >&2
+  echo "복사할 base/agents 또는 skills가 없습니다." >&2
   exit 1
 fi
