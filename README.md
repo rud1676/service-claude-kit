@@ -30,18 +30,18 @@ AI 코딩은 "일단 만들어줘"로 시작할 수 있다. 하지만 대상이 
 
 설치 중 두 가지를 묻는다:
 
-1. **프로젝트 관리 툴** — `Jira`(jiraticket 스킬 포함) / `Linear`(준비 중, 추후 스킬 제공) / `없음`
+1. **프로젝트 관리 툴** — `Jira`(jiraticket 스킬 포함) / `GitHub Projects`(gh-project 스킬 포함, 무료·gh CLI) / `없음`
 2. **작업 환경** — `원격 서버`(접속 링크를 내부/외부 2가지로 안내) / `로컬`(localhost만)
 
 답에 따라:
-- Jira가 아니면 Jira 전용 `jiraticket` 스킬은 설치하지 않는다.
+- Jira를 고르면 `jiraticket`만, GitHub Projects를 고르면 `gh-project`만 남긴다(둘 중 하나). `없음`이면 둘 다 설치하지 않는다.
 - 로컬을 고르면 `worktree` 스킬에서 원격 접속(내부/외부 DDNS) 안내를 제거한다.
 - 고른 값은 `CLAUDE.md`의 `service-kit:config` 블록에 기록돼, 다음 세션의 에이전트가 읽는다.
 
-비대화(CI/스크립트) 환경에서는 질문을 건너뛰고 아무것도 제거하지 않는 기본값(`jira` + `remote`)으로 설치한다. 환경변수로 지정할 수도 있다:
+비대화(CI/스크립트) 환경에서는 질문을 건너뛰고 기본값(`jira` + `remote`)으로 설치한다. 환경변수로 지정할 수도 있다:
 
 ```bash
-SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./scripts/install.sh myproject
+SCK_PMTOOL=jira|ghproject|none  SCK_ENV=remote|local  ./scripts/install.sh myproject
 ./scripts/install.sh myproject --force   # 이미 있는 .claude/ 파일까지 덮어씀
 ```
 
@@ -83,7 +83,7 @@ npx skills add rud1676/service-claude-kit
 
 **문제**: 들어온 요구사항을 머리로만 관리하면, 실제 브랜치·커밋·PR과 티켓이 어긋나고 무엇을 왜 바꿨는지 추적이 끊긴다.
 
-**해결**: [`jiraticket`](./skills/jiraticket/SKILL.md) / [`issue-mgmt`](./skills/issue-mgmt/SKILL.md). 티켓 조회 → 선택 → (코드 근거로) 분석 → `worktree`로 구현까지 한 흐름으로 잇고, 브랜치·커밋·PR을 티켓 키로 연결한다.
+**해결**: [`jiraticket`](./skills/jiraticket/SKILL.md)(Jira) / [`gh-project`](./skills/gh-project/SKILL.md)(GitHub Projects) / [`issue-mgmt`](./skills/issue-mgmt/SKILL.md). 티켓·아이템 조회 → 선택 → (코드 근거로) 분석 → `worktree`로 구현까지 한 흐름으로 잇고, 브랜치·커밋·PR을 티켓 키(또는 이슈 번호)로 연결한다.
 
 ### #5: 시안이 우리 기존 컴포넌트와 무관하게 구현돼 중복·불일치가 쌓인다
 
@@ -122,6 +122,7 @@ npx skills add rud1676/service-claude-kit
 │   ├── issue-mgmt/         # 이슈/티켓 관리 절차
 │   ├── explain/            # 변경/신규 코드를 '참여'용으로 이해·기록
 │   ├── jiraticket/         # Jira 티켓 조회·선택 → 분석 → worktree로 구현 위임
+│   ├── gh-project/         # GitHub Projects 아이템 조회·선택 → 분석 → worktree로 구현 위임 (gh CLI, 무료)
 │   ├── worktree/           # git 워크트리 기반 수정→검증→커밋→PR (공용 구현 절차)
 │   └── figma-depth-find/   # 큰 Figma 프레임을 멀티에이전트로 탐색·우리 컴포넌트 매핑
 ├── scripts/                # 이 repo의 스크립트 모음
@@ -178,8 +179,8 @@ npx skills add rud1676/service-claude-kit
 
 ## Roadmap
 
-- **Linear 티켓 스킬** — 현재 installer의 "프로젝트 관리 툴" 질문에 선택지로는 있으나 스킬은 준비 중. 만들어지면 `Linear` 선택 시 `jiraticket` 대신 import된다.
-- 그 외 이슈 트래커(GitHub Issues 등)·CI 연동 스킬은 필요에 따라 추가.
+- **Linear 티켓 스킬** — Linear가 유료라 우선순위를 낮추고, 무료로 쓸 수 있는 GitHub Projects 연동([`gh-project`](./skills/gh-project/SKILL.md))을 먼저 넣었다. 필요가 생기면 Linear MCP 기반 스킬을 추가한다.
+- 그 외 이슈 트래커·CI 연동 스킬은 필요에 따라 추가.
 
 ## 새 역할 추가하기
 

@@ -20,7 +20,7 @@
 #
 # 비대화(스크립트/CI) 환경에서는 질문을 건너뛰고 기본값(jira + remote,
 # 즉 아무것도 제거하지 않음)으로 설치한다. 환경변수로 지정할 수도 있다:
-#   SCK_PMTOOL=jira|linear|none  SCK_ENV=remote|local  ./scripts/install.sh myproject
+#   SCK_PMTOOL=jira|ghproject|none  SCK_ENV=remote|local  ./scripts/install.sh myproject
 set -euo pipefail
 
 # 이 스크립트는 scripts/ 안에 있으므로, repo 루트는 한 단계 위다.
@@ -57,12 +57,12 @@ if [[ -t 0 ]]; then
   if [[ -z "$PMTOOL" ]]; then
     echo
     echo "프로젝트 관리 툴을 선택하세요:"
-    echo "  1) Jira        — jiraticket 스킬 포함"
-    echo "  2) Linear      — (준비 중) 관련 스킬은 추후 제공"
-    echo "  3) 없음/기타    — 티켓 연동 스킬 없이 설치"
+    echo "  1) Jira            — jiraticket 스킬 포함 (Atlassian MCP)"
+    echo "  2) GitHub Projects — gh-project 스킬 포함 (gh CLI, 무료)"
+    echo "  3) 없음/기타        — 티켓 연동 스킬 없이 설치"
     read -r -p "선택 [1]: " _ans
     case "$_ans" in
-      2) PMTOOL=linear;;
+      2) PMTOOL=ghproject;;
       3) PMTOOL=none;;
       *) PMTOOL=jira;;
     esac
@@ -108,16 +108,20 @@ if [[ -d "$HOOKS_DIR" ]]; then
 fi
 
 # --- 답에 맞게 스킬 취사 (구조 결정 자동화) ---
-# 프로젝트 관리 툴: Jira 가 아니면 Jira 전용 jiraticket 스킬은 빼둔다.
+# 프로젝트 관리 툴에 맞는 티켓 스킬만 남기고 나머지는 빼둔다.
+# (jiraticket=Jira 전용, gh-project=GitHub Projects 전용. 둘 중 하나만.)
 case "$PMTOOL" in
-  jira) : ;;  # jiraticket 유지
-  linear)
+  jira)
+    rm -rf "$DEST/skills/gh-project"
+    echo "ℹ️  Jira 선택 — jiraticket 스킬을 설치했습니다(gh-project 제외)."
+    ;;
+  ghproject)
     rm -rf "$DEST/skills/jiraticket"
-    echo "ℹ️  Linear 티켓 스킬은 준비 중입니다 — jiraticket(Jira 전용)은 설치하지 않았습니다."
+    echo "ℹ️  GitHub Projects 선택 — gh-project 스킬을 설치했습니다(jiraticket 제외)."
     ;;
   *)
-    rm -rf "$DEST/skills/jiraticket"
-    echo "ℹ️  프로젝트 관리 툴 미선택 — jiraticket 스킬은 설치하지 않았습니다."
+    rm -rf "$DEST/skills/jiraticket" "$DEST/skills/gh-project"
+    echo "ℹ️  프로젝트 관리 툴 미선택 — 티켓 연동 스킬(jiraticket·gh-project)은 설치하지 않았습니다."
     ;;
 esac
 
