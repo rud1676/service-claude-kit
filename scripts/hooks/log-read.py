@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-# PostToolUse 훅: Read/Grep/Glob 호출을 세션별 파일(./claude-log/<session_id>.md)에 기록한다.
+# PostToolUse 훅: Read/Grep/Glob/Bash 호출을 세션별 파일(./claude-log/<session_id>.md)에 기록한다.
 # Claude Code가 stdin으로 넘기는 JSON(session_id, cwd, tool_name, tool_input, tool_response)을 파싱한다.
 # Read 는 tool_response.file 의 startLine/numLines/totalLines 로 "어디까지 봤는지" 범위를 같이 남긴다.
+# Bash 는 실행한 명령어를 그대로 남겨(문제 발생 시 어떤 명령을 쳤는지 검토용), 범위 칸에 종료코드/설명을 붙인다.
 import sys
 import os
 import json
@@ -40,6 +41,11 @@ def file_meta(obj):
     return None
 
 
+def cell(s):
+    """마크다운 테이블 칸이 깨지지 않게 개행은 공백으로, `|` 는 이스케이프한다."""
+    return " ".join(str(s).splitlines()).replace("|", "\\|").strip()
+
+
 if tool == "Grep":
     target = ti.get("pattern", "")
     if ti.get("path"):
@@ -48,12 +54,33 @@ elif tool == "Glob":
     target = ti.get("pattern", "")
     if ti.get("path"):
         target += f"  @{ti.get('path')}"
+elif tool == "Bash":
+    target = ti.get("command", "")
 else:
     target = ti.get("file_path") or ti.get("path") or ti.get("pattern") or ""
 
+target = cell(target)
+
 # Read 범위 계산: 전체 vs 일부(L시작~끝/전체줄). Grep/Glob 은 범위 없음.
+# Bash 는 범위 칸에 설명(description)과 종료코드를 남긴다.
 rng = ""
-if tool == "Read":
+if tool == "Bash":
+    parts = []
+    desc = ti.get("description")
+    if desc:
+        parts.append(cell(desc))
+    code = None
+    if isinstance(tr, dict):
+        for k in ("exit_code", "exitCode", "returnCode", "code"):
+            if k in tr and tr[k] is not None:
+                code = tr[k]
+                break
+        if tr.get("interrupted"):
+            parts.append("중단됨")
+    if code is not None:
+        parts.append(f"exit {code}")
+    rng = " · ".join(parts)
+elif tool == "Read":
     meta = file_meta(tr)
     if meta:
         start = meta.get("startLine") or 1
