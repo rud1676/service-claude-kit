@@ -1,0 +1,72 @@
+// 스킬 트리거 평가 케이스. expect = 발동해야 할 스킬 이름 또는 "none".
+// note = 이 케이스가 검증하는 것(사람용). // 줄과 빈 줄은 무시.
+// 분류: [canonical] 대표호출 [para] 같은의도 다른말투 [neg] 하드네거티브
+//        [collide] 스킬 간 경계 [noise] 무관
+
+// ══ gh-project ══════════════════════════════════════════
+{"prompt": "/gh-project", "expect": "gh-project", "note": "[canonical] 슬래시"}
+{"prompt": "내 깃허브 프로젝트 이슈 목록 좀 보여줘", "expect": "gh-project", "note": "[canonical] 조회"}
+{"prompt": "github projects에 있는 이 이슈 코드 분석해서 PR까지 만들어줘", "expect": "gh-project", "note": "[canonical] 전체 워크플로우"}
+{"prompt": "깃헙 프로젝트 백로그에서 하나 골라서 작업 시작하자", "expect": "gh-project", "note": "[para] 다른 말투"}
+{"prompt": "gh 프로젝트 v2 아이템들 좀 뽑아줄래", "expect": "gh-project", "note": "[para] 약어"}
+
+// ══ jiraticket ══════════════════════════════════════════
+{"prompt": "/jiraticket", "expect": "jiraticket", "note": "[canonical] 슬래시"}
+{"prompt": "내 지라 티켓 목록 보여줘", "expect": "jiraticket", "note": "[canonical] 조회"}
+{"prompt": "이 지라 티켓 코드 분석해서 고치고 PR 올려줘", "expect": "jiraticket", "note": "[canonical] 전체 워크플로우"}
+{"prompt": "내 스프린트에 잡힌 Jira 이슈 뭐뭐 있는지 좀 볼래", "expect": "jiraticket", "note": "[para] 다른 말투"}
+
+// ══ issue-mgmt ══════════════════════════════════════════
+{"prompt": "이 작업 티켓으로 만들어줘", "expect": "issue-mgmt", "note": "[canonical] 티켓 생성"}
+{"prompt": "이번 커밋을 티켓이랑 연결해줘", "expect": "issue-mgmt", "note": "[canonical] 커밋-티켓 연결"}
+{"prompt": "이 작업 지라에 올려줘", "expect": "issue-mgmt", "note": "[canonical] description 예시 그대로"}
+{"prompt": "방금 만든 브랜치를 이슈 번호랑 엮어줘", "expect": "issue-mgmt", "note": "[para] 브랜치-이슈 연결"}
+
+// ══ 티켓 3형제 경계 (제일 중요) ═══════════════════════════
+{"prompt": "이 작업 지라에 티켓으로 새로 등록해줘", "expect": "issue-mgmt", "note": "[collide] 생성=issue-mgmt (jiraticket 아님)"}
+{"prompt": "깃허브 이슈 하나 새로 만들어줘", "expect": "issue-mgmt", "note": "[collide] 깃헙이지만 '생성'=issue-mgmt"}
+{"prompt": "지라에서 티켓 하나 골라서 그거 코드 작업하자", "expect": "jiraticket", "note": "[collide] 조회+작업=jiraticket"}
+{"prompt": "깃헙 프로젝트에서 이슈 골라서 코드 수정하자", "expect": "gh-project", "note": "[collide] 깃헙 조회+작업=gh-project"}
+
+// ══ explain ═════════════════════════════════════════════
+{"prompt": "이 PR 왜 이렇게 짰는지 설명 문서로 남겨줘", "expect": "explain", "note": "[canonical] 결정 복원+문서화"}
+{"prompt": "방금 만든 거 정리해서 wiki에 남겨줘", "expect": "explain", "note": "[canonical] 변경 정리"}
+{"prompt": "이 diff 머지 전에 결정 배경이랑 버린 대안까지 정리해줘", "expect": "explain", "note": "[para] 리뷰 전 점검"}
+{"prompt": "이 함수가 뭐 하는지 한 줄로 설명해줘", "expect": "none", "note": "[neg] 단순 코드설명 — 문서화 아님"}
+{"prompt": "이 에러 왜 나는지 설명 좀 해줄래", "expect": "none", "note": "[neg] 디버깅 — explain 아님"}
+
+// ══ worktree (명시 호출만) ══════════════════════════════
+{"prompt": "/worktree", "expect": "worktree", "note": "[canonical] 명시 호출은 발동"}
+{"prompt": "워크트리가 뭔지 설명해줄래?", "expect": "none", "note": "[neg] 단어 언급만 — 발동 금지"}
+{"prompt": "git worktree add 명령어 사용법 알려줘", "expect": "none", "note": "[neg] 명령어 질문"}
+{"prompt": "워크트리 하나 파서 이 이슈 작업 진행해줘", "expect": "none", "note": "[neg] 의미상 맞아도 자동발동 금지 (가드 검증)"}
+
+// ══ figma-depth-find (명시 호출만) ══════════════════════
+{"prompt": "/figma-depth-find https://www.figma.com/design/abc/Screen?node-id=1-2", "expect": "figma-depth-find", "note": "[canonical] 명시 호출은 발동"}
+{"prompt": "이 피그마 링크 좀 봐줘 https://www.figma.com/design/abc/S?node-id=1-2", "expect": "figma-depth-find", "note": "[canonical] design URL 공유 → 발동"}
+{"prompt": "이 피그마 화면을 우리 코드 컴포넌트로 매핑해줘 https://figma.com/design/x", "expect": "figma-depth-find", "note": "[canonical] design URL + 매핑 의도 → 발동"}
+{"prompt": "이 피그마로 PRD 좀 뽑아줘 https://figma.com/design/y", "expect": "none", "note": "[collide] URL 있어도 PRD 목적은 prd-from-figma로 (이 repo엔 없어서 none)"}
+{"prompt": "피그마 디자인 시스템이 뭔지 설명해줘", "expect": "none", "note": "[neg] design URL 없는 단순 언급 → 발동 금지"}
+
+// ══ acceptance-criteria (앞단 — 인테이크/AC 분해) ═══════
+{"prompt": "/acceptance-criteria", "expect": "acceptance-criteria", "note": "[canonical] 슬래시"}
+{"prompt": "이 리팩토링 방향 잡고 작은 티켓들로 쪼개서 AC까지 정해줘", "expect": "acceptance-criteria", "note": "[canonical] 인테이크→AC 분해"}
+{"prompt": "큰 작업인데 어떻게 티켓으로 쪼갤지 AC부터 같이 정하자", "expect": "acceptance-criteria", "note": "[para] AC 확정 의도"}
+{"prompt": "이 큰 리팩토링을 방향부터 잡고 여러 티켓으로 분해해 AC까지 붙여줘", "expect": "acceptance-criteria", "note": "[collide] 대규모 인테이크+분해 (단건 생성 issue-mgmt 아님)"}
+
+// ══ orchestrate (뒷단 — Ready 드레인) ══════════════════
+{"prompt": "/orchestrate", "expect": "orchestrate", "note": "[canonical] 슬래시"}
+{"prompt": "Ready에 쌓인 티켓들 우선순위 순서로 쭉 처리해줘", "expect": "orchestrate", "note": "[canonical] Ready 드레인"}
+{"prompt": "Ready 돌려줘", "expect": "orchestrate", "note": "[canonical] 트리거 문구"}
+
+// ══ grill-me (명시 'grill me'만) ═══════════════════════
+{"prompt": "grill me on this refactor plan", "expect": "grill-me", "note": "[canonical] 명시 grill"}
+{"prompt": "이 설계 리뷰해서 문제점 알려줘", "expect": "none", "note": "[neg] review는 grill-me 아님(스킬 규율)"}
+{"prompt": "내 계획 허점 좀 찔러줘", "expect": "none", "note": "[neg] poke holes ≠ grill-me"}
+
+// ══ noise (아무것도 안 떠야 함) ═════════════════════════
+{"prompt": "이 함수 좀 리팩터링해줘", "expect": "none", "note": "[noise] 일반 코딩"}
+{"prompt": "리액트로 버튼 컴포넌트 하나 만들어줘", "expect": "none", "note": "[noise] 일반 구현"}
+{"prompt": "이 버그 왜 나는지 같이 디버깅 좀 하자", "expect": "none", "note": "[noise] 디버깅"}
+{"prompt": "이 코드 유닛테스트 좀 짜줘", "expect": "none", "note": "[noise] 테스트 작성"}
+{"prompt": "오늘 서울 날씨 어때?", "expect": "none", "note": "[noise] 완전 무관"}

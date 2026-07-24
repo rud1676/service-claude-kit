@@ -143,6 +143,51 @@ if [[ -f "$WT" ]]; then
   fi
 fi
 
+# --- orchestrate·acceptance-criteria: "고도화 게이트" 주입 (grill-me로 고도화 전 실행 잠금) ---
+# 이 두 스킬(스펙 주도 자율 실행 루프)은 "고쳐 쓰는 참고 구현"이라, 검증 레시피·Status 이름·
+# 큐 트리거·트래커 보드 세부가 이 프로젝트에 맞게 채워지기 전엔 자율 실행이 위험하다(false-green 등).
+# 그래서 설치 시 게이트 블록을 주입해, grill-me 고도화 전에는 스킬이 스스로 실행을 멈추게 한다.
+# 고도화가 끝나면 그 세션이 게이트 블록을 제거해 잠금을 푼다. (멱등: 이미 게이트/HARDENED면 skip)
+GATE_TMP="$(mktemp)"
+cat > "$GATE_TMP" <<'EOF'
+
+<!-- SCK:HARDEN-GATE:START -->
+> ⛔ **아직 이 프로젝트에 맞게 고도화되지 않은 스킬 — 지금 실행하지 말 것.**
+>
+> 이 스킬(`orchestrate` ↔ `acceptance-criteria`는 한 쌍)은 "고쳐 쓰는 참고 구현"이다.
+> 검증 레시피(무슨 명령으로 동작 보존을 증명하는지)·Status 이름·큐 트리거·트래커 보드 세부가
+> 이 프로젝트에 맞게 채워지기 전에는 자율 실행이 위험하다(예: 검증이 가짜인데 통과로 착각하는 false-green).
+>
+> **지금 할 일 — 실행을 멈추고 사용자에게 이렇게 알린다:**
+> "이 스킬은 먼저 **grill-me 세션으로 이 프로젝트에 맞게 고도화**해야 합니다(orchestrate ↔ acceptance-criteria는 한 쌍이라 같이). 지금은 실행하지 않습니다. 고도화를 시작할까요?"
+>
+> **잠금 해제(고도화 세션 끝에)**: 두 스킬의 `프로젝트 커스터마이징` 주석을 이 프로젝트 값으로 채우고,
+> 두 스킬에서 이 `SCK:HARDEN-GATE` 블록을 제거한 뒤 그 자리에 `<!-- SCK:HARDENED (YYYY-MM-DD) -->` 한 줄을 남긴다.
+<!-- SCK:HARDEN-GATE:END -->
+EOF
+
+inject_harden_gate() {
+  # inject_harden_gate <skill_md> : frontmatter(두 번째 '---') 바로 뒤에 게이트 블록을 넣는다.
+  local f="$1" tmp
+  [[ -f "$f" ]] || return 0
+  # 멱등: 이미 게이트가 있거나 이미 고도화(HARDENED)됐으면 건드리지 않는다.
+  # (커스터마이징 주석이 이 문자열을 언급하므로, 반드시 실제 마커 '<!-- ... -->'로 판단한다.)
+  if grep -q '<!-- SCK:HARDEN-GATE:START' "$f" || grep -q '<!-- SCK:HARDENED' "$f"; then
+    return 0
+  fi
+  tmp="$(mktemp)"
+  awk -v gf="$GATE_TMP" '
+    { print }
+    /^---[[:space:]]*$/ { fm++; if (fm==2) { while ((getline l < gf) > 0) print l; close(gf) } }
+  ' "$f" > "$tmp" && mv "$tmp" "$f"
+}
+inject_harden_gate "$DEST/skills/orchestrate/SKILL.md"
+inject_harden_gate "$DEST/skills/acceptance-criteria/SKILL.md"
+rm -f "$GATE_TMP"
+if [[ -f "$DEST/skills/orchestrate/SKILL.md" ]] || [[ -f "$DEST/skills/acceptance-criteria/SKILL.md" ]]; then
+  echo "ℹ️  orchestrate·acceptance-criteria: 고도화 게이트 주입 — 먼저 grill-me로 고도화한 뒤 사용하세요."
+fi
+
 # --- settings.json 훅 배선 안전 병합 (python3, 멱등) ---
 # 기존 settings.json 의 permissions/env 등을 보존하고 hooks 만 union 병합한다.
 # command 문자열(훅 파일명 포함)로 중복을 판단해 재실행해도 안 겹친다.

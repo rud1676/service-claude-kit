@@ -97,6 +97,18 @@ npx skills add rud1676/service-claude-kit
 
 **해결**: **인터랙티브 [`install.sh`](./scripts/install.sh)**. 환경(PM 툴·로컬/원격)을 물어보고 맞는 스킬만·맞는 모양으로 깔고, `CLAUDE.md` 작업 규칙·훅 배선·워크스페이스 폴더를 일관되게 세팅한다. 베이스를 개선하면 다음 프로젝트부터 반영된다.
 
+### #7: 요구사항은 추상적으로 들어오고, 위임은 게이트마다 끊긴다
+
+**문제**: "이거 리팩토링 좀 해줘" 같은 추상 요구는 그대로 AI에 넘기면 매 판단마다 멈춰 물어보게 된다. 반대로 다 맡기면 낡은 전제로 추측해 옆길로 샌다. 개발자는 "촘촘히 정의"와 "루프에서 빠지기" 사이에서 진다.
+
+**해결**: 한 쌍의 오케스트레이터 스킬. [`acceptance-criteria`](./skills/acceptance-criteria/SKILL.md)(앞단)가 [`grill-me`](./skills/grill-me/SKILL.md) 인터뷰로 추상 요구를 **작은 티켓 + AC**로 분해해 트래커에 올리고, [`orchestrate`](./skills/orchestrate/SKILL.md)(뒷단)가 승인된(Ready) 티켓을 **순차 자율로 드레인**한다 — 구현은 `worktree`, 검증은 테스트/스모크, 서술은 `explain`에 위임하고, 판단이 필요한 3지점(권한·데이터·의미갈림)만 큐에 쌓아 멈추지 않는다. 보드가 **관제탑**이라 상태는 스킬 밖(트래커)에 산다. (OpenAI Symphony와 같은 "이슈트래커=control plane" 계열이되, 1인/소규모용으로 사람을 루프에 남긴 게이트형.)
+
+### #8: AI가 테스트를 "양산"하고, 개발자는 그 테스트가 뭘 지키는지 모른다
+
+**문제**: "테스트 좀 짜줘"라고 하면 AI는 커버리지 숫자를 채우는 테스트를 쏟아낸다. 프레임워크 동작을 검증하거나 필드마다 반복하는 무의미한 테스트가 쌓이고, 정작 개발자는 그 테스트가 **어떤 회귀를 막는지** 설명하지 못한다 — 테스트마저 인지 부채가 된다.
+
+**해결**: [`unit-test`](./skills/unit-test/SKILL.md)(API 1개) / [`scenario-test`](./skills/scenario-test/SKILL.md)(여러 API를 순서대로 호출하는 유저 플로우). 실제 앱 진입점 + 실제 테스트 DB로 검증하되, **"이 테스트가 없으면 어떤 버그를 놓치는가"에 답할 수 없는 테스트는 짜지 않는다**(정당화 규율). 작성 후 **브리핑 → 문답**으로 개발자가 사전 데이터·분기 커버리지·놓친 케이스를 직접 설명하게 해 루프에 남긴다. 테스트 러너·앱 진입점·DB/ORM 같은 스택 구체값은 각 파일의 `프로젝트 커스터마이징` 주석대로 채우는 **"고쳐 쓰는 참고 구현"**이다.
+
 ## 개념 정리
 
 ### 항상-온 규칙(CLAUDE.md) vs 필요할 때 스킬
@@ -104,7 +116,7 @@ npx skills add rud1676/service-claude-kit
 이 킷은 "에이전트가 알아야 할 것"을 두 층으로 나눈다. 무엇을 어디에 둘지의 기준은 **"항상 켜져 있어야 하나, 특정 작업일 때만 필요하나"**다.
 
 - **항상-온 규칙 — `CLAUDE.md`** (`base/CLAUDE.block.md`가 설치 시 주입): 작업 종류와 무관하게 **늘 지켜야 하는 계약**. 폴더 구조, wiki/decision-log 갱신 규칙, "추적 메타는 답변 본문에 출력 금지", "커밋·PR은 사용자 요청 시만". 이건 매 컨텍스트에 항상 있어야 의미가 있어서, 스킬로 빼면 오히려 깨진다.
-- **필요할 때 스킬 — `skills/*/SKILL.md`**: "이 작업을 하면 이 절차를 따르라"는 **절차**. 관련 작업이 올 때만 로드돼 컨텍스트를 가볍게 유지한다. (explain·worktree·jiraticket·figma-depth-find·issue-mgmt)
+- **필요할 때 스킬 — `skills/*/SKILL.md`**: "이 작업을 하면 이 절차를 따르라"는 **절차**. 관련 작업이 올 때만 로드돼 컨텍스트를 가볍게 유지한다. (explain·worktree·jiraticket·gh-project·figma-depth-find·issue-mgmt·acceptance-criteria·orchestrate·grill-me·unit-test·scenario-test)
 
 즉 CLAUDE.md의 규칙은 수동적 설정이 아니라 그 자체로 **#3을 막는 Fix 장치**다.
 
@@ -124,7 +136,12 @@ npx skills add rud1676/service-claude-kit
 │   ├── jiraticket/         # Jira 티켓 조회·선택 → 분석 → worktree로 구현 위임
 │   ├── gh-project/         # GitHub Projects 아이템 조회·선택 → 분석 → worktree로 구현 위임 (gh CLI, 무료)
 │   ├── worktree/           # git 워크트리 기반 수정→검증→커밋→PR (공용 구현 절차)
-│   └── figma-depth-find/   # 큰 Figma 프레임을 멀티에이전트로 탐색·우리 컴포넌트 매핑
+│   ├── figma-depth-find/   # 큰 Figma 프레임을 멀티에이전트로 탐색·우리 컴포넌트 매핑
+│   ├── acceptance-criteria/# 큰 작업을 grill-me로 인터뷰 → 티켓+AC로 분해 → 트래커에 생성 (루프 앞단)
+│   ├── orchestrate/        # Ready 티켓을 순차 자율로 드레인(구현→검증→PR→explain) (루프 뒷단)
+│   ├── grill-me/           # 계획/설계를 한 번에 한 질문씩 파고드는 소크라테스 인터뷰 (Matt Pocock, MIT)
+│   ├── unit-test/          # API 1개의 단위 테스트를 정당화 규율로 작성 → 브리핑·문답 (고쳐 쓰는 참고 구현)
+│   └── scenario-test/      # 여러 API를 순서대로 호출하는 유저 플로우(시나리오) 테스트 → 브리핑·문답
 ├── scripts/                # 이 repo의 스크립트 모음
 │   ├── install.sh          # 대상 프로젝트에 워크스페이스를 설치(환경 질문 포함)
 │   └── hooks/              # 세션 추적 훅(python) → 설치 시 .claude/hooks/로 복사
