@@ -10,12 +10,15 @@
 # cloudId·DDNS 같은 인스턴스 비밀값은 각 파일에서 직접 채운다.)
 #
 # 인자로 프로젝트 이름(또는 상대/절대 경로)을 받는다.
-# 상대 경로는 "이 스크립트를 실행한 현재 위치" 기준으로 해석되고,
-# 해당 폴더가 없으면 새로 만든다.
+# - 이름만 주면(슬래시 없음) 킷 안의 `workspaces/<이름>/` 에 만든다.
+#   이 폴더는 .gitignore 처리돼 있어, 설치한 워크스페이스가 킷 repo를 오염시키지 않는다.
+# - 슬래시가 든 경로/절대 경로를 주면 그 위치를 그대로 쓴다(상대 경로는 실행한 현재 위치 기준).
+# 어느 쪽이든 해당 폴더가 없으면 새로 만든다.
 #
 # 사용법(repo 루트에서 실행):
-#   ./scripts/install.sh myproject          # ./myproject 를 만들고(없으면) 베이스 설치(질문 포함)
+#   ./scripts/install.sh myproject          # workspaces/myproject 를 만들고(없으면) 베이스 설치(질문 포함)
 #   ./scripts/install.sh myproject --force  # 이미 있는 파일도 덮어씀
+#   ./scripts/install.sh ../other/proj      # 킷 밖의 경로도 그대로 동작
 #   ./scripts/install.sh /abs/path/proj     # 절대 경로도 그대로 동작
 #
 # 비대화(스크립트/CI) 환경에서는 질문을 건너뛰고 기본값(jira + remote,
@@ -29,6 +32,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BASE_DIR="$REPO_ROOT/base"        # agents · settings.hooks.json · CLAUDE.block.md
 SKILLS_DIR="$REPO_ROOT/skills"    # 최상위 스킬 정본(skills.sh 발견 위치)
 HOOKS_DIR="$SCRIPT_DIR/hooks"     # scripts/hooks
+WORKSPACES_DIR="$REPO_ROOT/workspaces"  # 설치 산출물 기본 위치 (.gitignore 처리됨)
 
 NAME="${1:-}"
 FORCE="${2:-}"
@@ -38,8 +42,13 @@ if [[ -z "$NAME" ]]; then
   exit 1
 fi
 
-# 상대 경로는 현재 작업 디렉토리 기준, 없으면 생성한다.
-TARGET="$NAME"
+# 이름만 준 경우는 킷 안의 workspaces/ 아래로 모은다(.gitignore 처리돼 repo가 안 더러워짐).
+# 슬래시가 든 경로·절대 경로는 사용자가 위치를 명시한 것이므로 그대로 존중한다.
+if [[ "$NAME" == */* ]]; then
+  TARGET="$NAME"
+else
+  TARGET="$WORKSPACES_DIR/$NAME"
+fi
 if [[ ! -d "$TARGET" ]]; then
   echo "프로젝트 폴더 생성: $TARGET"
   mkdir -p "$TARGET"

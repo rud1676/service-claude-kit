@@ -22,7 +22,7 @@ AI 코딩은 "일단 만들어줘"로 시작할 수 있다. 하지만 대상이 
 
 ## 빠른 시작 (Quickstart)
 
-프로젝트 이름을 주면 `./<이름>` 폴더를 만들고(없으면) 워크스페이스를 설치한다. 설치 중 환경을 물어보고, **답에 맞는 스킬만·맞는 모양으로** 깔아준다.
+프로젝트 이름을 주면 `./workspaces/<이름>/` 폴더를 만들고(없으면) 워크스페이스를 설치한다. `workspaces/`는 `.gitignore` 처리돼 있어 설치한 워크스페이스가 이 킷 repo를 오염시키지 않는다. 킷 밖에 두고 싶으면 슬래시가 든 경로나 절대 경로를 주면 그 위치를 그대로 쓴다(예: `./scripts/install.sh ../myproject`). 설치 중 환경을 물어보고, **답에 맞는 스킬만·맞는 모양으로** 깔아준다.
 
 ```bash
 ./scripts/install.sh myproject
@@ -146,7 +146,7 @@ npx skills add rud1676/service-claude-kit
 │   ├── install.sh          # 대상 프로젝트에 워크스페이스를 설치(환경 질문 포함)
 │   └── hooks/              # 세션 추적 훅(python) → 설치 시 .claude/hooks/로 복사
 │       ├── context-checkpoint.py  # N프롬프트마다 wiki 갱신 리마인더
-│       ├── log-read.py            # Read/Grep/Glob 기록 → claude-log/
+│       ├── log-read.py            # Read/Grep/Glob + Bash 실행 기록 → claude-log/
 │       └── summarize-session.py   # 세션 요약·토큰·참고문서·탐색집계 → claude-log/
 ├── base/                   # install.sh가 target .claude/에 넣는 나머지(비-스크립트)
 │   ├── agents/             # 서브에이전트(역할 페르소나) → .claude/agents/
@@ -155,7 +155,8 @@ npx skills add rud1676/service-claude-kit
 │   │   └── explainer.md    # 코드 설명자 (읽기 전용)
 │   ├── settings.hooks.json # 훅 배선(설치 시 .claude/settings.json에 안전 병합)
 │   └── CLAUDE.block.md     # 프로젝트 CLAUDE.md에 주입할 관리 규칙(마커 블록)
-└── _templates/             # 새 역할 만들 때 복사용 뼈대 (agent.md · SKILL.md)
+├── _templates/             # 새 역할 만들 때 복사용 뼈대 (agent.md · SKILL.md)
+└── workspaces/             # install.sh 산출물(설치된 작업 워크스페이스) — .gitignore, 추적 안 함
 ```
 
 ## 설치 후 워크스페이스 모습

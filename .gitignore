@@ -1,3 +1,7 @@
 .DS_Store
 *.log
 node_modules/
+
+# install.sh 로 설치한 작업 워크스페이스들 (킷의 산출물 — repo가 추적하지 않는다).
+# 각 워크스페이스는 자체 CLAUDE.md·.claude/·claude-log/ 와 repository/ 안의 독립 git repo를 갖는다.
+workspaces/
