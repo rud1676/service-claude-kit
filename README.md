@@ -107,7 +107,7 @@ npx skills add rud1676/service-claude-kit
 
 **문제**: 코드와 `wiki/`로 복원되는 건 **코드를 읽으면 확인되는 것**뿐이다. 대표가 카톡으로 정한 정책, 도메인 용어의 계산 기준, 광고 단가, "그때 왜 그 숫자로 했는지" — 이것들은 원본이 사라지면 **확인할 길이 자체가 없다.** 그래서 에이전트마다 다르게 추측하고, 반년 뒤엔 사람도 못 되돌린다. 더 나쁜 건 같은 정책이 두 곳에 각각 수정돼 **어느 쪽이 기준인지 사라지는** 것이다.
 
-**해결**: [`knowledgebase-setup`](./skills/knowledgebase-setup/SKILL.md) — 코드로 확인 안 되는 사실만 담는 **별도 git repo**를 세운다. `raw/`는 추가만(원본이 바뀌면 출처 표기가 거짓이 된다), 모든 문장에 **사실 등급**(`[확인:…]`/`[src:n]`/`[추론]`)과 출처 번호를 달고, **확정은 결정권자만**(에이전트는 못 올린다), 검사는 린트가 한다. 규칙은 산문으로 두지 않고 `types.json` 한 벌을 더 둬서 **상태값이 갈라지면 린트가 실패**하게 만든다. 회사 상황(영역·확정 입구·운전 방식)은 `grill-me` 인터뷰로 8갈림을 확정해 `schema/`에 박는다. 원본 적재는 [`knowledgebase-raw-scraping-github`](./skills/knowledgebase-raw-scraping-github/SKILL.md)가 맡는다(GitHub의 사람이 쓴 글만 — 코드는 다시 읽으면 확인되므로 안 긁는다).
+**해결**: [`knowledgebase-setup`](./skills/knowledgebase-setup/SKILL.md) — 코드로 확인 안 되는 사실만 담는 **별도 git repo**를 세운다. `raw/`는 추가만(원본이 바뀌면 출처 표기가 거짓이 된다), 모든 문장에 **사실 등급**(`[확인:…]`/`[src:n]`/`[추론]`)과 출처 번호를 달고, **확정은 결정권자만**(에이전트는 못 올린다), 검사는 린트가 한다. 규칙은 산문으로 두지 않고 `types.json` 한 벌을 더 둬서 **상태값이 갈라지면 린트가 실패**하게 만든다. 회사 상황(영역·확정 입구·운전 방식)은 `grill-me` 인터뷰로 8갈림을 확정해 `schema/`에 박는다. 원본 적재는 원천별 스킬이 맡는다 — [`…-github`](./skills/knowledgebase-raw-scraping-github/SKILL.md)(사람이 쓴 글만. 코드는 다시 읽으면 확인되므로 안 긁는다) · [`…-youtube`](./skills/knowledgebase-raw-scraping-youtube/SKILL.md)(채널 스크립트. 자동 자막은 기계가 들은 것이라 숫자·고유명사를 `[추론]`으로 묶는다).
 
 ## 개념 정리
 

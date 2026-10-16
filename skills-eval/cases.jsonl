@@ -95,3 +95,11 @@
 {"prompt": "지식베이스 만들어줘", "expect": "knowledgebase-setup", "note": "[collide] 세팅은 setup 쪽"}
 {"prompt": "깃허브 프로젝트 이슈 목록 보여줘", "expect": "gh-project", "note": "[collide] 티켓 조회·작업은 gh-project"}
 {"prompt": "이 레포 코드 전체 읽고 구조 정리해줘", "expect": "none", "note": "[neg] 코드 분석 — 적재 아님"}
+
+// ══ knowledgebase-raw-scraping-youtube (명시 호출만) ═══
+{"prompt": "/knowledgebase-raw-scraping-youtube", "expect": "knowledgebase-raw-scraping-youtube", "note": "[canonical] 슬래시"}
+{"prompt": "이 유튜브 채널 영상 스크립트 긁어서 지식베이스에 넣어줘 https://www.youtube.com/@foo", "expect": "knowledgebase-raw-scraping-youtube", "note": "[canonical] 채널 링크 + 적재"}
+{"prompt": "유튜브 자막 받아서 raw에 적재해줘", "expect": "knowledgebase-raw-scraping-youtube", "note": "[para] 자막 표현"}
+{"prompt": "깃허브 이슈 긁어서 raw에 넣어줘", "expect": "knowledgebase-raw-scraping-github", "note": "[collide] 원천이 github"}
+{"prompt": "이 유튜브 영상 요약해줘", "expect": "none", "note": "[neg] 요약 — 적재 아님"}
+{"prompt": "유튜브 영상 다운로드해줘", "expect": "none", "note": "[neg] 영상 파일 다운로드는 범위 밖"}

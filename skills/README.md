@@ -8,7 +8,7 @@
 - **오케스트레이터(조립) 스킬**: 스스로 밑작업을 하지 않고, **원자 스킬을 `Skill` 도구로 호출해 규칙대로 엮는다.** 상태는 스킬이 아니라 **보드/트래커(관제탑)** 에 둔다.
   → `acceptance-criteria`, `orchestrate`, `knowledgebase-setup`, (그리고 단건 워크플로 `jiraticket`·`gh-project`)
 - **원자 스킬**: 한 가지 일만 잘한다. 혼자 써도 되고, 오케스트레이터가 블록처럼 끼워 쓴다.
-  → `grill-me`, `worktree`, `explain`, `issue-mgmt`, `unit-test`, `scenario-test`, `figma-depth-find`, `make-plan`, `knowledgebase-raw-scraping-github`
+  → `grill-me`, `worktree`, `explain`, `issue-mgmt`, `unit-test`, `scenario-test`, `figma-depth-find`, `make-plan`, `knowledgebase-raw-scraping-github`, `knowledgebase-raw-scraping-youtube`
 
 ---
 
@@ -109,8 +109,13 @@ issue-mgmt                             티켓 생성·상태전환·커밋 연�
    (이슈·PR·본문 있는 커밋·릴리스. 코드는 안 긁는다 — 다시 읽으면 확인되므로)
    → 적재 후 "어느 페이지를 새로/갱신" 후보만 보고. 페이지 자동 생성 안 함
 
+/knowledgebase-raw-scraping-youtube  채널 링크 → 스크립트(자막)+설명란 → raw/youtube/
+   (수동 자막 우선, 없으면 자동(ASR). 어느 쪽인지 박아서 ASR 숫자·고유명사는
+    사람이 타임스탬프를 확인하기 전까지 [추론] 으로 묶는다. yt-dlp 필요)
+
 [예정] /자료수집  상위 오케스트레이터 — 원천이 둘 이상 되면 생긴다
    ├─ Skill▶ knowledgebase-raw-scraping-github
+   ├─ Skill▶ knowledgebase-raw-scraping-youtube
    └─ Skill▶ (예정) slack · figma · db · paste(카톡·통화처럼 기계가 못 읽는 것)
 ```
 
@@ -147,6 +152,7 @@ make-plan  plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식
 | **make-plan** | 원자(서브) | plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식(§0 화면·mermaid·결정 표)으로 작성 | 상위 호출·`/make-plan` |
 | **knowledgebase-setup** | 오케스트레이터(세팅) | 회사 지식 베이스(공통기억) git repo를 세우고 grill-me 인터뷰로 규칙(층·등급·타입·영역·린트)을 확정 | `/knowledgebase-setup`·명시 호출 |
 | **knowledgebase-raw-scraping-github** | 원자(적재) | GitHub의 사람이 쓴 글(이슈·PR·본문 있는 커밋·릴리스)을 `raw/github/`에 추가만 + 위키 후보 보고 | `/knowledgebase-raw-scraping-github`·명시 호출 |
+| **knowledgebase-raw-scraping-youtube** | 원자(적재) | 유튜브 채널의 스크립트(자막)+설명란을 `raw/youtube/`에 추가만. 수동/자동(ASR)을 구별해 등급 상한을 걸고 타임스탬프를 남긴다 | `/knowledgebase-raw-scraping-youtube`·명시 호출 |
 
 ⛔ = 설치 시 고도화 게이트가 걸려 나온다(첫 사용 전 grill-me 고도화 필요).
 
