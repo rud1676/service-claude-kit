@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1",
   "areas_file": "schema/areas.md",
-  "lint_ignore": ["schema/**", "raw/**"],
+  "lint_ignore": ["schema/**", "raw/**", "state/**"],
 
   "required_keys": ["type", "title", "status", "area", "sources", "updated"],
   "optional_keys": ["areas_also", "confirmed_by", "confirmed_at", "confirm_pending", "supersedes", "summary"],
