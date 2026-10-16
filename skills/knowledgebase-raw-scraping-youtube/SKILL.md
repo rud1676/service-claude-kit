@@ -72,6 +72,8 @@ OPS 0.950          →   OPS 영점 구오공 / OPS 0.95
 
 ## 단계
 
+스킬 경로를 `$SKILL`(= 이 파일이 있는 디렉토리. 프로젝트 설치 시 `<워크스페이스>/.claude/skills/knowledgebase-raw-scraping-youtube`, 전역 설치 시 `~/.claude/skills/knowledgebase-raw-scraping-youtube`)이라 부른다.
+
 ### 0. 선행 확인
 
 ```bash
@@ -86,7 +88,7 @@ cat <KB_ROOT>/state/youtube-watermark.json 2>/dev/null
 `info.json` 에 `subtitles`(수동)·`automatic_captions`(자동) 목록이 들어오므로 **자막을 받지 않고도 유무를 안다.** dry-run 은 영상당 정보 추출 1회뿐이다.
 
 ```bash
-python3 scripts/scrape_youtube.py --kb <KB_ROOT> --channel <URL> --lang ko,en --dry-run
+python3 $SKILL/scripts/scrape_youtube.py --kb <KB_ROOT> --channel <URL> --lang ko,en --dry-run
 ```
 
 출력 예:
@@ -103,7 +105,7 @@ python3 scripts/scrape_youtube.py --kb <KB_ROOT> --channel <URL> --lang ko,en --
 ### 2. 적재
 
 ```bash
-python3 scripts/scrape_youtube.py --kb <KB_ROOT> --channel <URL> \
+python3 $SKILL/scripts/scrape_youtube.py --kb <KB_ROOT> --channel <URL> \
   --lang ko,en [--limit 50] [--since 20260101] [--comments]
 ```
 

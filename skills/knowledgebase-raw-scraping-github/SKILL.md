@@ -59,8 +59,10 @@ cat <KB_ROOT>/state/github-watermark.json 2>/dev/null   # 지난 수집 지점
 
 ### 1. 적재 — 스크립트가 한다
 
+스킬 경로를 `$SKILL`(= 이 파일이 있는 디렉토리. 프로젝트 설치 시 `<워크스페이스>/.claude/skills/knowledgebase-raw-scraping-github`, 전역 설치 시 `~/.claude/skills/knowledgebase-raw-scraping-github`)이라 부른다.
+
 ```bash
-python3 scripts/scrape_github.py \
+python3 $SKILL/scripts/scrape_github.py \
   --kb <KB_ROOT> \
   --repo owner/name [--repo owner/other] \
   [--kinds issues,pulls,commits,releases] \
