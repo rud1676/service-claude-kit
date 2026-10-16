@@ -70,3 +70,10 @@
 {"prompt": "이 버그 왜 나는지 같이 디버깅 좀 하자", "expect": "none", "note": "[noise] 디버깅"}
 {"prompt": "이 코드 유닛테스트 좀 짜줘", "expect": "none", "note": "[noise] 테스트 작성"}
 {"prompt": "오늘 서울 날씨 어때?", "expect": "none", "note": "[noise] 완전 무관"}
+
+// ══ make-plan (명시 호출만) ═════════════════════════════
+{"prompt": "/make-plan", "expect": "make-plan", "note": "[canonical] 슬래시"}
+{"prompt": "/make-plan 이 기능 계획서를 화면 캡처 넣어서 설계 문서로 써줘", "expect": "make-plan", "note": "[canonical] 명시 호출 + 내용"}
+{"prompt": "오늘 할 일 계획 좀 세워줘", "expect": "none", "note": "[neg] '계획' 단어만으로 발동 금지"}
+{"prompt": "이 리팩토링 plan 어떻게 생각해?", "expect": "none", "note": "[neg] plan 언급 잡담 — 자동 발동 금지"}
+

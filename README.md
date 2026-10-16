@@ -1,28 +1,21 @@
 # service-claude-kit
 
-[![skills.sh](https://skills.sh/b/rud1676/service-claude-kit)](https://skills.sh/rud1676/service-claude-kit)
+[![GitHub](https://img.shields.io/badge/GitHub-rud1676%2Fservice--claude--kit-black?logo=github)](https://github.com/rud1676/service-claude-kit)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-workspace-D97757)](https://claude.com/claude-code)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-**실제로 운영할, 그리고 이미 운영 중인 서비스를 AI와 함께 개발하기 위한 Claude Code 워크스페이스 베이스.**
-AI가 운영 코드에 코드를 쏟아내도, 개발자가 **통제권과 이해**를 놓지 않게 한다.
+**풀스택·인프라 등 서비스 개발을 위한 Claude Code 스킬 셋팅.**
+목표: 운영 중인(또는 곧 운영할) 코드에 AI를 들이되, 개발자가 **통제권과 이해**를 놓지 않게 한다 — 변경은 격리해 검증하고, 결정은 기록하고, 요구사항은 코드 근거로 판별한다.
 
-AI 코딩은 "일단 만들어줘"로 시작할 수 있다. 하지만 대상이 **이미 사람이 쓰는 서비스**이거나 **곧 운영할 서비스**라면 이야기가 다르다. 요구사항은 계속 새로 들어오고, 그때마다 개발자는 "지금 코드로 이게 가능한가, 정확히 뭘 바꿔야 하나"를 판단하고 소통해야 한다. 이 판단은 **현재 버전의 실제 상태**를 촘촘히 인지하고 있어야만 가능하다.
-
-문제는, AI가 인간이 따라갈 수 없는 속도로 **운영 코드에도** 변경을 쏟아낸다는 것이다. 부작용·회귀가 쌓이고, "왜 이렇게 됐는지"를 아무도 모르는 채로 코드만 불어난다. 그러면 개발자는 어느 순간 자기 서비스의 흐름에 낄 수 없게 된다 — **인지 부채(cognitive debt)**다.
-
-이 킷은 그 부채를 작게 막기 위한 **초기 세팅**이다. 목표는 에이전트가 더 많이 하게 만드는 것이 아니라, **개발자를 루프 안에 남겨두는 것**이다: 변경을 격리해 검증하고, 결정을 기록하고, 요구사항을 코드 근거로 판별한다. 가능성 판단과 소통은 여전히 개발자의 몫이고 — 이 킷은 그 판단이 추측이 아니라 **현재 상태의 진실**에 근거하도록 받쳐준다.
-
-> 이 킷은 그린필드 MVP를 빠르게 찍어내는 스타터팩이 아니다(그 영역은 [not-agent/starter-skills](https://skills.sh/not-agent/starter-skills) 같은 도구가 잘 한다). 정반대 지점 — **살아있는 서비스 코드에 AI를 안전하게 들이는 쪽**에 집중한다.
+> 그린필드 MVP 스타터팩이 아니다([not-agent/starter-skills](https://skills.sh/not-agent/starter-skills) 참고). **살아있는 서비스 코드에 AI를 안전하게 들이는 쪽**에 집중한다.
 
 ## 기본 전제 (Defaults)
 
-- **대상은 운영/실서비스 코드.** 그린필드가 아니라, 이미 돌고 있거나 곧 돌릴 코드베이스에 요구사항이 계속 들어오는 상황을 기본으로 둔다.
 - **개발자를 루프에.** 자동화의 목적은 "AI가 알아서 다 하기"가 아니라 "개발자가 촘촘히 인지한 상태를 유지하기"다. 사람이 게이트에서 고를 것을 고르고, 코드 검토는 PR에서 사람이 한다.
 - **멀티레포 워크스페이스.** 실제 코드는 `repository/` 아래 각 독립 git repo에 두고, 워크스페이스 자체는 git이 아니다. (front·server·admin 등이 한 워크스페이스에 모이는 실무 구조를 가정)
 - **실행축 스킬은 "고쳐 쓰는 참고 구현".** 아래 worktree·jiraticket·figma-depth-find는 실무에서 검증된 절차지만, DDNS·포트·Jira cloudId 같은 구체값은 환경마다 다르다. 정신(격리→검증→게이트→PR 등)은 보편이고, 구체값은 각 파일의 `프로젝트 커스터마이징` 주석대로 자기 환경에 맞게 채운다.
 
 ## 빠른 시작 (Quickstart)
-
-프로젝트 이름을 주면 `./workspaces/<이름>/` 폴더를 만들고(없으면) 워크스페이스를 설치한다. `workspaces/`는 `.gitignore` 처리돼 있어 설치한 워크스페이스가 이 킷 repo를 오염시키지 않는다. 킷 밖에 두고 싶으면 슬래시가 든 경로나 절대 경로를 주면 그 위치를 그대로 쓴다(예: `./scripts/install.sh ../myproject`). 설치 중 환경을 물어보고, **답에 맞는 스킬만·맞는 모양으로** 깔아준다.
 
 ```bash
 ./scripts/install.sh myproject
@@ -32,6 +25,7 @@ AI 코딩은 "일단 만들어줘"로 시작할 수 있다. 하지만 대상이 
 
 1. **프로젝트 관리 툴** — `Jira`(jiraticket 스킬 포함) / `GitHub Projects`(gh-project 스킬 포함, 무료·gh CLI) / `없음`
 2. **작업 환경** — `원격 서버`(접속 링크를 내부/외부 2가지로 안내) / `로컬`(localhost만)
+   - 외부 링크를 쓰려면 공유기 설정 페이지 등에서 **NAT(포트포워딩)로 해당 포트를 서버에 연결**해 둬야 한다.
 
 답에 따라:
 - Jira를 고르면 `jiraticket`만, GitHub Projects를 고르면 `gh-project`만 남긴다(둘 중 하나). `없음`이면 둘 다 설치하지 않는다.
@@ -116,7 +110,7 @@ npx skills add rud1676/service-claude-kit
 이 킷은 "에이전트가 알아야 할 것"을 두 층으로 나눈다. 무엇을 어디에 둘지의 기준은 **"항상 켜져 있어야 하나, 특정 작업일 때만 필요하나"**다.
 
 - **항상-온 규칙 — `CLAUDE.md`** (`base/CLAUDE.block.md`가 설치 시 주입): 작업 종류와 무관하게 **늘 지켜야 하는 계약**. 폴더 구조, wiki/decision-log 갱신 규칙, "추적 메타는 답변 본문에 출력 금지", "커밋·PR은 사용자 요청 시만". 이건 매 컨텍스트에 항상 있어야 의미가 있어서, 스킬로 빼면 오히려 깨진다.
-- **필요할 때 스킬 — `skills/*/SKILL.md`**: "이 작업을 하면 이 절차를 따르라"는 **절차**. 관련 작업이 올 때만 로드돼 컨텍스트를 가볍게 유지한다. (explain·worktree·jiraticket·gh-project·figma-depth-find·issue-mgmt·acceptance-criteria·orchestrate·grill-me·unit-test·scenario-test)
+- **필요할 때 스킬 — `skills/*/SKILL.md`**: "이 작업을 하면 이 절차를 따르라"는 **절차**. 관련 작업이 올 때만 로드돼 컨텍스트를 가볍게 유지한다. (explain·worktree·jiraticket·gh-project·figma-depth-find·issue-mgmt·acceptance-criteria·orchestrate·grill-me·unit-test·scenario-test·make-plan)
 
 즉 CLAUDE.md의 규칙은 수동적 설정이 아니라 그 자체로 **#3을 막는 Fix 장치**다.
 
@@ -141,7 +135,8 @@ npx skills add rud1676/service-claude-kit
 │   ├── orchestrate/        # Ready 티켓을 순차 자율로 드레인(구현→검증→PR→explain) (루프 뒷단)
 │   ├── grill-me/           # 계획/설계를 한 번에 한 질문씩 파고드는 소크라테스 인터뷰 (Matt Pocock, MIT)
 │   ├── unit-test/          # API 1개의 단위 테스트를 정당화 규율로 작성 → 브리핑·문답 (고쳐 쓰는 참고 구현)
-│   └── scenario-test/      # 여러 API를 순서대로 호출하는 유저 플로우(시나리오) 테스트 → 브리핑·문답
+│   ├── scenario-test/      # 여러 API를 순서대로 호출하는 유저 플로우(시나리오) 테스트 → 브리핑·문답
+│   └── make-plan/          # plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식으로 작성 (상위 스킬 plan 단계 공용)
 ├── scripts/                # 이 repo의 스크립트 모음
 │   ├── install.sh          # 대상 프로젝트에 워크스페이스를 설치(환경 질문 포함)
 │   └── hooks/              # 세션 추적 훅(python) → 설치 시 .claude/hooks/로 복사
