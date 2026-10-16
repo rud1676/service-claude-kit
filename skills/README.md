@@ -6,7 +6,7 @@
 ## 두 레이어 — 오케스트레이터 vs 원자
 
 - **오케스트레이터(조립) 스킬**: 스스로 밑작업을 하지 않고, **원자 스킬을 `Skill` 도구로 호출해 규칙대로 엮는다.** 상태는 스킬이 아니라 **보드/트래커(관제탑)** 에 둔다.
-  → `acceptance-criteria`, `orchestrate`, (그리고 단건 워크플로 `jiraticket`·`gh-project`)
+  → `acceptance-criteria`, `orchestrate`, `knowledgebase-setup`, (그리고 단건 워크플로 `jiraticket`·`gh-project`)
 - **원자 스킬**: 한 가지 일만 잘한다. 혼자 써도 되고, 오케스트레이터가 블록처럼 끼워 쓴다.
   → `grill-me`, `worktree`, `explain`, `issue-mgmt`, `unit-test`, `scenario-test`, `figma-depth-find`, `make-plan`
 
@@ -27,6 +27,7 @@ graph TD
     UT["/unit-test"]
     ST["/scenario-test"]
     FD["/figma-depth-find<br/>→ Scout 서브에이전트 병렬"]
+    KB["/knowledgebase-setup<br/>지식 베이스 세우기"]
 
     GM(["grill-me · 인터뷰"])
     WT(["worktree · 구현→검증→PR"])
@@ -34,6 +35,7 @@ graph TD
     TR(["트래커 · 티켓 생성/조회/상태<br/>gh-project·jiraticket·issue-mgmt"])
 
     AC -->|Skill▶| GM
+    KB -->|Skill▶| GM
     AC -->|생성| TR
     AC -.->|보드 경유·READY 승격| OR
     OR -->|Skill▶| WT
@@ -48,7 +50,7 @@ graph TD
 - `worktree` ← **orchestrate · jiraticket · gh-project** — 세 진입점이 공유하는 단 하나의 구현 엔진
 - `트래커` ← **acceptance-criteria**(생성) · **orchestrate**(조회·상태 이동)
 - `explain` ← **orchestrate** (직접 호출도)
-- `grill-me` ← **acceptance-criteria** (직접 "grill me"도)
+- `grill-me` ← **acceptance-criteria** · **knowledgebase-setup** (직접 "grill me"도)
 
 > **이중 역할 주의**: `gh-project`·`jiraticket`은 두 모자를 쓴다 — (1) 티켓 1개를 처리하는 **단건 워크플로 진입점**, (2) `acceptance-criteria`·`orchestrate`가 티켓 생성·조회·상태이동에 부르는 **트래커 블록**. 어느 트래커를 쓸지는 `CLAUDE.md`의 `service-kit:config`가 정한다.
 
@@ -95,6 +97,19 @@ issue-mgmt                             티켓 생성·상태전환·커밋 연�
    └─ Scout 서브에이전트 병렬 → Figma 깊게 탐색 → 우리 코드베이스 컴포넌트로 매핑
 ```
 
+#### ⑤ 지식 베이스 (회사·서비스의 공통기억)
+
+```
+/knowledgebase-setup   별도 git repo로 지식 베이스를 세우고 운영 규칙을 확정
+   └─ Skill▶ grill-me   8갈림(범위·원천·라우팅·확정입구·영역·운전·화면)을 한 번에 하나씩
+
+산출물: schema/rules.md · areas.md · types.json + raw/ 골격 + README.md
+```
+
+> **워크스페이스 `wiki/` 와 다른 물건이다.** `wiki/`(explain 스킬)는 **코드를 읽으면 확인되는 것**,
+> 지식 베이스는 **코드를 읽어도 안 나오는 것**(사람의 결정·도메인 정의·운영 수치·외부 사실)을 담는다.
+> 후자만 출처 표기·사실 등급·확정 입구가 필요하다. 경계 규칙은 `knowledgebase-setup/SKILL.md` 참고.
+
 #### 원자 스킬 한 줄 정의 (위에서 블록으로 불리거나, 혼자서도)
 
 ```
@@ -122,6 +137,7 @@ make-plan  plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식
 | **scenario-test** | 원자 | 여러 API를 순서대로 부르는 유저 플로우 통합 테스트 | `/scenario-test`·자연어 |
 | **figma-depth-find** | 원자(서브) | 큰 Figma 프레임을 멀티에이전트로 탐색·우리 컴포넌트 매핑 | 상위 호출·`/figma-depth-find` |
 | **make-plan** | 원자(서브) | plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식(§0 화면·mermaid·결정 표)으로 작성 | 상위 호출·`/make-plan` |
+| **knowledgebase-setup** | 오케스트레이터(세팅) | 회사 지식 베이스(공통기억) git repo를 세우고 grill-me 인터뷰로 규칙(층·등급·타입·영역·린트)을 확정 | `/knowledgebase-setup`·명시 호출 |
 
 ⛔ = 설치 시 고도화 게이트가 걸려 나온다(첫 사용 전 grill-me 고도화 필요).
 

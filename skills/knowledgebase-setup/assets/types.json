@@ -1,0 +1,65 @@
+{
+  "schema_version": "0.1",
+  "areas_file": "schema/areas.md",
+  "lint_ignore": ["schema/**", "raw/**"],
+
+  "required_keys": ["type", "title", "status", "area", "sources", "updated"],
+  "optional_keys": ["areas_also", "confirmed_by", "confirmed_at", "confirm_pending", "supersedes", "summary"],
+  "auto_keys": ["id", "created", "grade_marks"],
+
+  "grade_marks": {
+    "확정": "[확인:<이름> YYYY-MM-DD]",
+    "문서상": "[src:n]",
+    "추론": "[추론]"
+  },
+  "confirmers": ["{{결정권자}}"],
+
+  "types": {
+    "decision": {
+      "id_prefix": "dec",
+      "status": ["proposed", "decided", "reversed"],
+      "terminal": ["decided", "reversed"],
+      "confirmed_only": ["decided"],
+      "keys": ["decided_by", "decided_at"],
+      "sections": ["결정", "이유", "버린 대안"]
+    },
+    "question": {
+      "id_prefix": "q",
+      "status": ["open", "answered", "closed"],
+      "terminal": ["answered", "closed"],
+      "confirmed_only": [],
+      "keys": ["ask", "asked_by"],
+      "sections": ["질문", "왜 열렸나", "지금까지 나온 것"],
+      "sources_optional": true
+    },
+    "concept": {
+      "id_prefix": "c",
+      "status": ["active", "retired"],
+      "terminal": ["retired"],
+      "confirmed_only": [],
+      "keys": ["aliases"],
+      "sections": ["정의", "계산·판정 기준", "주의"]
+    },
+    "spec": {
+      "id_prefix": "s",
+      "status": ["draft", "active", "superseded"],
+      "terminal": ["superseded"],
+      "confirmed_only": ["active"],
+      "keys": [],
+      "sections": ["한 줄 요약", "지금 어떻게 동작하나", "규칙", "예외"]
+    },
+    "event": {
+      "id_prefix": "e",
+      "status": ["open", "in-progress", "closed", "cancelled"],
+      "terminal": ["closed", "cancelled"],
+      "confirmed_only": [],
+      "keys": ["due", "owner"],
+      "sections": ["무슨 일", "경과", "남은 것"]
+    }
+  },
+
+  "type_promotion": {
+    "trigger_count": 3,
+    "note": "맞는 타입이 없는 페이지가 같은 성격으로 3건 모이면 타입 신설을 제안하고 결정권자 승인(PR)으로 확정한다."
+  }
+}
