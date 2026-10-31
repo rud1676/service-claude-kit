@@ -1,0 +1,168 @@
+<!doctype html>
+<!--
+  기획 뷰어 — 왼쪽 PRD(md), 오른쪽 살아있는 목업(HTML)을 나란히 본다.
+  기획 폴더(prd/·_kit/ 이 있는 곳)나 그 상위에서 http로 서빙해야 동작한다 (file:// 은 fetch가 막힌다):
+    python3 -m http.server 3000 --bind 0.0.0.0
+  열기: <기획 폴더>/_kit/viewer.html            → PRD 목록
+        <기획 폴더>/_kit/viewer.html?prd=<slug>  → 그 PRD
+  설정: 아래 <script> 맨 위 TITLE · SLACK 을 프로젝트 값으로 바꾼다.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>기획 뷰어</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; color: #020202; background: #F2F4F6; }
+  header { height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 20px; background: #fff; border-bottom: 1px solid #EDF0F3; }
+  header b { color: #506CF5; font-size: 18px; }
+  header a { color: #495057; text-decoration: none; font-size: 14px; }
+  main { display: grid; grid-template-columns: var(--left, 46%) 8px 1fr; height: calc(100vh - 52px); }
+  #split { cursor: col-resize; background: #EDF0F3; position: relative; }
+  #split::after { content: ''; position: absolute; left: 3px; top: 50%; width: 2px; height: 40px; margin-top: -20px; border-radius: 2px; background: #ADB5BD; }
+  #split:hover, body.dragging #split { background: #C5CEFB; }
+  body.dragging iframe { pointer-events: none; } body.dragging { user-select: none; cursor: col-resize; }
+  #doc { overflow: auto; min-width: 0; padding: 28px 36px 80px; background: #fff; line-height: 1.65; font-size: 15px; }
+  #doc h1 { font-size: 26px; margin-top: 0; } #doc h2 { font-size: 20px; margin-top: 36px; padding-bottom: 6px; border-bottom: 1px solid #EDF0F3; }
+  #doc img { max-width: 100%; border: 1px solid #EDF0F3; border-radius: 8px; }
+  #doc table { border-collapse: collapse; width: 100%; font-size: 14px; } #doc th, #doc td { border: 1px solid #EDF0F3; padding: 6px 10px; vertical-align: top; }
+  #doc th { background: #FAFBFB; } #doc code { background: #F2F4F6; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  #doc blockquote { margin: 0; padding: 8px 14px; background: #E0E5FF55; border-left: 4px solid #506CF5; border-radius: 4px; }
+  #doc .meta { font-size: 13px; color: #495057; background: #FAFBFB; border: 1px solid #EDF0F3; border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; }
+  #stage { display: flex; flex-direction: column; min-width: 0; }
+  #bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px; background: #fff; border-bottom: 1px solid #EDF0F3; align-items: center; }
+  #bar button { border: 1px solid #EDF0F3; background: #fff; border-radius: 999px; padding: 5px 12px; font: 600 13px system-ui, sans-serif; color: #495057; cursor: pointer; }
+  #bar button.on { background: #506CF5; border-color: #506CF5; color: #fff; }
+  #bar .sep { width: 1px; height: 20px; background: #EDF0F3; margin: 0 6px; }
+  #frameWrap { flex: 1; overflow: hidden; padding: 16px; }
+  iframe { display: block; border: 0; background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.08); transform-origin: top left; }
+  .list { max-width: 1240px; margin: 28px auto; background: #fff; border-radius: 12px; padding: 24px 32px; }
+  .list h2 { margin: 0 0 14px; }
+  .list table { width: 100%; border-collapse: collapse; font-size: 14px; } .list td, .list th { padding: 10px; border-bottom: 1px solid #EDF0F3; text-align: left; vertical-align: top; }
+  .list th { color: #495057; font-size: 13px; white-space: nowrap; }
+  .list a { color: #506CF5; font-weight: 600; text-decoration: none; }
+  .list .links a { font-size: 12px; margin-right: 8px; }
+  .list .muted { color: #ADB5BD; font-size: 12px; } .list .note { color: #868E96; font-size: 12px; margin-top: 4px; }
+  .list .ok { color: #138A5B; font-weight: 600; } .list .no { color: #CED4DA; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tabs a { border: 1px solid #EDF0F3; border-radius: 999px; padding: 5px 12px; font: 600 13px system-ui, sans-serif; color: #495057; }
+  .tabs a.on { background: #506CF5; border-color: #506CF5; color: #fff; }
+  .st { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: #F2F4F6; color: #495057; white-space: nowrap; }
+  .st.agreed, .st.planned { background: #E0E5FF; color: #3F5ACC; } .st.building { background: #FFF3E0; color: #C25E00; } .st.done { background: #E3F7EE; color: #138A5B; } .st.dropped { background: #FFE9E9; color: #C62828; }
+</style>
+</head>
+<body>
+<header><b id="brand"></b><span>기획</span><a href="?">기획 목록</a><span id="title" style="color:#ADB5BD;font-size:14px"></span></header>
+<div id="app"></div>
+<script>
+// ── 프로젝트 설정 ──
+const TITLE = '기획';                                   // 헤더 왼쪽 이름
+const SLACK = '';                                       // 슬랙 스레드 링크용, 예: 'https://<워크스페이스>.slack.com/archives/'
+// ────────────────
+document.getElementById('brand').textContent = TITLE;
+const slug = new URLSearchParams(location.search).get('prd');
+const PRD_DIR = '../prd/';
+// 프론트매터가 바뀌어도 브라우저 캐시의 옛 상태를 보여주지 않게 매번 서버에 재검증한다.
+const FRESH = { cache: 'no-cache' };
+mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+
+function frontmatter(md) {
+  const m = md.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (!m) return [{}, md];
+  const meta = {};
+  m[1].split('\n').forEach((l) => { const i = l.indexOf(':'); if (i > 0) meta[l.slice(0, i).trim()] = l.slice(i + 1).replace(/\s+#\s.*$/, '').trim(); });
+  return [meta, md.slice(m[0].length)];
+}
+
+const threadUrl = (m) => (SLACK && m.slack_channel && m.slack_thread ? `${SLACK}${m.slack_channel}/p${m.slack_thread.replace('.', '')}` : '');
+const LABEL = { draft: '📝 진행중', agreed: '🤝 기획완료(개발 전)', planned: '📐 plan 있음', building: '🚧 개발중', done: '✅ 반영 끝', dropped: '🗑 접음' };
+const TABS = [['all', '전체'], ['draft', '진행중'], ['agreed', '기획완료', ['agreed', 'planned']], ['building', '개발중'], ['done', '반영 끝'], ['dropped', '접음']];
+const esc = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const applied = (v) => (v ? `<span class="ok">✅ ${esc(v)}</span>` : '<span class="no">⬜</span>');
+
+async function list() {
+  const html = await (await fetch(PRD_DIR, FRESH)).text();
+  const slugs = [...html.matchAll(/href="([^"?/.][^"]*)\/"/g)].map((m) => decodeURIComponent(m[1]));
+  const rows = (await Promise.all(slugs.map(async (s) => {
+    const r = await fetch(`${PRD_DIR}${s}/prd.md`, FRESH);
+    if (!r.ok) return null;
+    const [meta] = frontmatter(await r.text());
+    return { s, meta };
+  }))).filter(Boolean).sort((a, b) => (b.meta.updated || '').localeCompare(a.meta.updated || ''));
+  const tab = new URLSearchParams(location.search).get('tab') || 'all';
+  const inTab = (k, m) => { const t = TABS.find(([key]) => key === k); return k === 'all' || (t[2] || [k]).includes(m.status); };
+  const shown = rows.filter(({ meta }) => inTab(tab, meta));
+  document.getElementById('app').innerHTML = `<div class="list"><h2>기획 목록</h2>
+    <div class="tabs">${TABS.map(([k, n]) => `<a class="${k === tab ? 'on' : ''}" href="?tab=${k}">${n} ${rows.filter(({ meta }) => inTab(k, meta)).length}</a>`).join('')}</div>
+    <table>
+    <tr><th style="width:34%">기획</th><th>상태</th><th>요청</th><th>dev 반영</th><th>live 반영</th><th>갱신</th></tr>
+    ${shown.map(({ s, meta }) => {
+      const t = threadUrl(meta);
+      return `<tr>
+      <td><a href="?prd=${encodeURIComponent(s)}">${esc(meta.title || s)}</a><br><span class="muted">${esc(s)}</span>
+        <div class="links">${t ? `<a href="${t}" target="_blank">💬 스레드</a>` : ''}${meta.plan ? `<a href="../${esc(meta.plan)}" target="_blank">📐 plan</a>` : ''}</div></td>
+      <td><span class="st ${esc(meta.status)}">${LABEL[meta.status] || esc(meta.status || '-')}</span>${meta.note ? `<div class="note">${esc(meta.note)}</div>` : ''}</td>
+      <td style="white-space:nowrap">${esc(meta.requester || '')}${meta.source === 'slack' ? ' · 슬랙' : ''}</td>
+      <td>${applied(meta.dev_applied)}</td>
+      <td>${applied(meta.live_applied)}</td>
+      <td style="white-space:nowrap">${esc((meta.updated || '').slice(5))}</td></tr>`;
+    }).join('')}
+  </table>
+  <p class="muted" style="margin-top:14px">값은 각 prd.md 프론트매터에서 읽는다. dev·live 반영 칸은 구현이 배포될 때 채운다.</p></div>`;
+}
+
+async function show() {
+  const base = `${PRD_DIR}${slug}/`;
+  const [meta, body] = frontmatter(await (await fetch(base + 'prd.md', FRESH)).text());
+  document.getElementById('title').textContent = `/ ${meta.title || slug}`;
+  document.getElementById('app').innerHTML = `<main><article id="doc"></article><div id="split" title="끌어서 폭 조절 · 더블클릭으로 원래대로"></div><section id="stage">
+    <div id="bar"></div><div id="frameWrap"><iframe id="mock"></iframe></div></section></main>`;
+
+  const doc = document.getElementById('doc');
+  const t = threadUrl(meta);
+  doc.innerHTML = `<div class="meta">${t ? `<a href="${t}" target="_blank" style="color:#506CF5;font-weight:600">💬 슬랙 스레드</a> · ` : ''}${Object.entries(meta).filter(([, v]) => v).map(([k, v]) => `<b>${k}</b> ${esc(v)}`).join(' · ')}</div>` + marked.parse(body);
+  doc.querySelectorAll('img').forEach((img) => { const s = img.getAttribute('src'); if (!/^(https?:|\/|data:)/.test(s)) img.src = base + s; });
+  doc.querySelectorAll('a[href]').forEach((a) => { const h = a.getAttribute('href'); if (/mockup\.html/.test(h)) { a.onclick = (e) => { e.preventDefault(); const st = new URL(h, location.href).searchParams.get('state'); if (st) setState(st); }; } });
+  doc.querySelectorAll('pre code.language-mermaid').forEach((c) => { const d = document.createElement('div'); d.className = 'mermaid'; d.textContent = c.textContent; c.parentElement.replaceWith(d); });
+  mermaid.run({ querySelector: '#doc .mermaid' });
+
+  const frame = document.getElementById('mock');
+  let state = null, device = 'pc';
+  const devices = { pc: 1440, mobile: 430 };
+  function render() {
+    frame.src = `${base}mockup.html${state ? `?state=${encodeURIComponent(state)}&capture=1` : '?capture=1'}`;
+    const w = devices[device], avail = document.getElementById('frameWrap').clientWidth - 32;
+    const scale = Math.min(1, avail / w);
+    frame.style.width = w + 'px';
+    frame.style.transform = `scale(${scale})`;
+    frame.style.marginLeft = (avail - w * scale) / 2 + 'px';
+    frame.style.height = (document.getElementById('frameWrap').clientHeight - 32) / scale + 'px';
+    document.querySelectorAll('#bar button').forEach((b) => b.classList.toggle('on', b.dataset.v === state || b.dataset.d === device));
+  }
+  window.setState = (s) => { state = s; render(); };
+
+  const probe = await fetch(base + 'mockup.html');
+  if (!probe.ok) { document.getElementById('stage').innerHTML = '<p style="padding:24px;color:#ADB5BD">mockup.html 없음</p>'; return; }
+  const states = ((await probe.text()).match(/data-states="([^"]+)"/)?.[1] || 'default').split(',').map((s) => s.trim());
+  state = states[0];
+  document.getElementById('bar').innerHTML = states.map((s) => `<button data-v="${s}">${s}</button>`).join('') +
+    `<span class="sep"></span><button data-d="pc">PC 1440</button><button data-d="mobile">모바일 430</button>
+     <span class="sep"></span><a href="${base}mockup.html" target="_blank" style="font-size:13px;color:#506CF5">새 창 ↗</a>`;
+  document.querySelectorAll('#bar button').forEach((b) => b.onclick = () => { if (b.dataset.v) state = b.dataset.v; if (b.dataset.d) device = b.dataset.d; render(); });
+  window.addEventListener('resize', render);
+  const mainEl = document.querySelector('main'), split = document.getElementById('split');
+  const setLeft = (px) => { const w = Math.max(280, Math.min(px, mainEl.clientWidth - 320)); mainEl.style.setProperty('--left', w + 'px'); localStorage.setItem('prdViewerLeft', w); };
+  const saved = +localStorage.getItem('prdViewerLeft'); if (saved) setLeft(saved);
+  split.onpointerdown = (e) => { e.preventDefault(); document.body.classList.add('dragging'); split.setPointerCapture(e.pointerId); };
+  split.onpointermove = (e) => { if (document.body.classList.contains('dragging')) setLeft(e.clientX - mainEl.getBoundingClientRect().left); };
+  split.onpointerup = () => { document.body.classList.remove('dragging'); render(); };
+  split.ondblclick = () => { mainEl.style.removeProperty('--left'); localStorage.removeItem('prdViewerLeft'); render(); };
+  render();
+}
+
+slug ? show() : list();
+</script>
+</body>
+</html>

@@ -77,6 +77,13 @@
 {"prompt": "오늘 할 일 계획 좀 세워줘", "expect": "none", "note": "[neg] '계획' 단어만으로 발동 금지"}
 {"prompt": "이 리팩토링 plan 어떻게 생각해?", "expect": "none", "note": "[neg] plan 언급 잡담 — 자동 발동 금지"}
 
+// ══ make-prd ════════════════════════════════════════════
+{"prompt": "/make-prd", "expect": "make-prd", "note": "[canonical] 슬래시"}
+{"prompt": "이 이슈 기획해줘. 지금 화면 위에 목업으로 보여줘", "expect": "make-prd", "note": "[canonical] 이슈 기획 + 목업"}
+{"prompt": "이거 기획하자 — 주문 목록에 배지 붙이는 거", "expect": "make-prd", "note": "[para] 기획하자"}
+{"prompt": "합의된 PRD로 구현 계획서 써줘 /make-plan", "expect": "make-plan", "note": "[collide] 합의 후 구현 계획은 make-plan"}
+{"prompt": "PRD가 뭐의 약자야?", "expect": "none", "note": "[neg] PRD 언급 잡담 — 발동 금지"}
+
 // ══ knowledgebase-setup (명시 호출만) ═══════════════════
 {"prompt": "/knowledgebase-setup", "expect": "knowledgebase-setup", "note": "[canonical] 슬래시"}
 {"prompt": "회사 지식 베이스 만들어줘. 규칙부터 같이 설계하자", "expect": "knowledgebase-setup", "note": "[canonical] 세팅+규칙설계"}

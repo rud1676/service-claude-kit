@@ -8,7 +8,7 @@
 - **오케스트레이터(조립) 스킬**: 스스로 밑작업을 하지 않고, **원자 스킬을 `Skill` 도구로 호출해 규칙대로 엮는다.** 상태는 스킬이 아니라 **보드/트래커(관제탑)** 에 둔다.
   → `acceptance-criteria`, `orchestrate`, `knowledgebase-setup`, (그리고 단건 워크플로 `jiraticket`·`gh-project`)
 - **원자 스킬**: 한 가지 일만 잘한다. 혼자 써도 되고, 오케스트레이터가 블록처럼 끼워 쓴다.
-  → `grill-me`, `worktree`, `explain`, `issue-mgmt`, `unit-test`, `scenario-test`, `browser-e2e`, `figma-depth-find`, `make-plan`, `knowledgebase-raw-scraping-github`, `knowledgebase-raw-scraping-youtube`
+  → `grill-me`, `worktree`, `explain`, `issue-mgmt`, `unit-test`, `scenario-test`, `browser-e2e`, `figma-depth-find`, `make-prd`, `make-plan`, `knowledgebase-raw-scraping-github`, `knowledgebase-raw-scraping-youtube`
 
 ---
 
@@ -133,6 +133,7 @@ worktree   구현→검증→커밋→PR 메커니즘 (오케스트레이터·�
 explain    AI가 짠 변경을 '참여'용으로 이해·문서화 (orchestrate가 호출 / 직접도)
 grill-me   계획·설계를 한 번에 한 질문씩 파고드는 소크라테스 인터뷰 (Matt Pocock, MIT)
 make-plan  plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식으로 작성 (상위 스킬의 plan 단계가 호출 / 직접도)
+make-prd   개발 화면 스냅샷 위에 목업을 얹어 대화로 기획 → 상태별 캡처를 박은 prd.md (합의되면 make-plan 호출)
 ```
 
 ---
@@ -153,6 +154,7 @@ make-plan  plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식
 | **scenario-test** | 원자 | 여러 API를 순서대로 부르는 유저 플로우 통합 테스트 | `/scenario-test`·자연어 |
 | **browser-e2e** | 원자 | 브라우저로 실제 화면을 띄워 E2E 확인 → 단계별 캡처(직접 열어 확인) + 요청 시간표 + 기대/결과 표를 결과 문서로. 로컬(목업 로그인)·개발서버(배포 완료 확인 후) | `/browser-e2e`·자연어 |
 | **figma-depth-find** | 원자(서브) | 큰 Figma 프레임을 멀티에이전트로 탐색·우리 컴포넌트 매핑 | 상위 호출·`/figma-depth-find` |
+| **make-prd** | 원자 | 개발 서버 화면을 스냅샷으로 떠서 그 위에 새 기능 목업(HTML)을 얹고, 상태별 캡처를 박은 prd.md로 대화하며 기획. 합의되면 make-plan으로 plan까지 | `/make-prd`·"이거 기획하자" |
 | **make-plan** | 원자(서브) | plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식(§0 화면·mermaid·결정 표)으로 작성 | 상위 호출·`/make-plan` |
 | **knowledgebase-setup** | 오케스트레이터(세팅) | 회사 지식 베이스(공통기억) git repo를 세우고 grill-me 인터뷰로 규칙(층·등급·타입·영역·린트)을 확정 | `/knowledgebase-setup`·명시 호출 |
 | **knowledgebase-raw-scraping** | 오케스트레이터(적재) | 등록된 원천 스킬(github·youtube)을 차례로 불러 `raw/`를 채우고, 원천별 후보를 합쳐 보고 | `/knowledgebase-raw-scraping`·"raw 데이터 수집해줘" |

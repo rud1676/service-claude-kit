@@ -122,7 +122,7 @@ npx skills add rud1676/service-claude-kit
 이 킷은 "에이전트가 알아야 할 것"을 두 층으로 나눈다. 무엇을 어디에 둘지의 기준은 **"항상 켜져 있어야 하나, 특정 작업일 때만 필요하나"**다.
 
 - **항상-온 규칙 — `CLAUDE.md`** (`base/CLAUDE.block.md`가 설치 시 주입): 작업 종류와 무관하게 **늘 지켜야 하는 계약**. 폴더 구조, context/decision-log 갱신 규칙, "추적 메타는 답변 본문에 출력 금지", "커밋·PR은 사용자 요청 시만". 이건 매 컨텍스트에 항상 있어야 의미가 있어서, 스킬로 빼면 오히려 깨진다.
-- **필요할 때 스킬 — `skills/*/SKILL.md`**: "이 작업을 하면 이 절차를 따르라"는 **절차**. 관련 작업이 올 때만 로드돼 컨텍스트를 가볍게 유지한다. (explain·worktree·jiraticket·gh-project·figma-depth-find·issue-mgmt·acceptance-criteria·orchestrate·grill-me·unit-test·scenario-test·browser-e2e·make-plan)
+- **필요할 때 스킬 — `skills/*/SKILL.md`**: "이 작업을 하면 이 절차를 따르라"는 **절차**. 관련 작업이 올 때만 로드돼 컨텍스트를 가볍게 유지한다. (explain·worktree·jiraticket·gh-project·figma-depth-find·issue-mgmt·acceptance-criteria·orchestrate·grill-me·unit-test·scenario-test·browser-e2e·make-prd·make-plan)
 
 즉 CLAUDE.md의 규칙은 수동적 설정이 아니라 그 자체로 **#3을 막는 Fix 장치**다.
 
@@ -149,6 +149,7 @@ npx skills add rud1676/service-claude-kit
 │   ├── unit-test/          # API 1개의 단위 테스트를 정당화 규율로 작성 → 브리핑·문답 (고쳐 쓰는 참고 구현)
 │   ├── scenario-test/      # 여러 API를 순서대로 호출하는 유저 플로우(시나리오) 테스트 → 브리핑·문답
 │   ├── browser-e2e/        # 브라우저로 실제 화면 E2E 확인 → 단계별 캡처·요청 시간표·기대/결과 문서 (scripts/e2e-kit.cjs 헬퍼)
+│   ├── make-prd/           # 개발 화면 스냅샷 위에 목업을 얹어 대화로 기획 → 상태별 캡처를 박은 prd.md (assets/_kit 도구)
 │   └── make-plan/          # plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식으로 작성 (상위 스킬 plan 단계 공용)
 ├── scripts/                # 이 repo의 스크립트 모음
 │   ├── install.sh          # 대상 프로젝트에 워크스페이스를 설치(환경 질문 포함)
