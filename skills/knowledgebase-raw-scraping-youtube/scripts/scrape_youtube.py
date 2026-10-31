@@ -61,22 +61,23 @@ def parse_vtt(path):
     자동 자막은 스크롤 효과를 내려고 같은 줄을 2~3번 반복해 내려준다.
     그대로 두면 raw 가 3배로 부풀고 사람이 읽을 수 없다.
     """
-    raw = open(path, encoding="utf-8", errors="replace").read()
+    raw = open(path, encoding="utf-8", errors="replace").read().replace("\r\n", "\n")
     out, last = [], ""
-    for cue in re.split(r"\n\s*\n+", raw):
-        lines = [l for l in cue.strip().split("\n") if l.strip()]
-        if not lines or lines[0].startswith(("WEBVTT", "Kind:", "Language:", "NOTE")):
+    # 자동 자막은 cue 안에 공백 한 칸짜리 줄을 넣으므로 \s 로 cue 를 자르면 시각과 본문이 떨어진다
+    for cue in re.split(r"\n\n+", raw):
+        lines = cue.strip("\n").split("\n")
+        ti = next((i for i, l in enumerate(lines) if "-->" in l), None)
+        if ti is None:
             continue
-        ts = next((l for l in lines if "-->" in l), None)
-        if not ts:
-            continue
-        body = " ".join(l for l in lines if "-->" not in l)
-        body = re.sub(r"\s+", " ", TAG_RE.sub("", body)).strip()
-        if not body or body == last:
-            continue
-        last = body
-        hh, mm, ss = ts.split(" --> ")[0].strip()[:8].split(":")
-        out.append((int(hh) * 3600 + int(mm) * 60 + int(ss), body))
+        hh, mm, ss = lines[ti].split("-->")[0].strip()[:8].split(":")
+        sec = int(hh) * 3600 + int(mm) * 60 + int(ss)
+        # 자동 자막 cue 는 "직전 줄 + 새 줄" 2줄이라 cue 단위가 아니라 줄 단위로 걸러야 한다
+        for l in lines[ti + 1:]:
+            body = re.sub(r"\s+", " ", TAG_RE.sub("", l)).strip()
+            if not body or body == last:
+                continue
+            last = body
+            out.append((sec, body))
     return out
 
 
@@ -200,11 +201,13 @@ def main():
         if err:
             rep["failed"].append(f"{channel}: {err}")
             continue
-        fresh = [v for v in vids if not since or (v["upload_date"] and v["upload_date"] > since)]
+        # flat-playlist 는 채널에서 upload_date 를 NA 로 준다 — 날짜를 모르면 남기고 info.json 으로 판정한다
+        fresh = [v for v in vids if not since or not v["upload_date"] or v["upload_date"] > since]
         print(f"채널: {channel}\n  영상 {len(vids)}개 (limit={a.limit}, 60초 미만 제외) → "
               f"워터마크({since or '전체'}) 이후 {len(fresh)}개")
 
-        newest = since or ""
+        # 워터마크는 뒤로 가지 않는다 — --since 로 백필해도 기존 최신값을 지킨다
+        newest = max(since or "", wm.get(channel, {}).get("last_upload", ""))
         ch_slug = re.sub(r"[^\w.-]", "", channel.rstrip("/").split("/")[-1])[:40] or "channel"
         with tempfile.TemporaryDirectory(prefix="ytsub-") as tmp:
             for v in fresh:
@@ -217,8 +220,9 @@ def main():
                 # 날짜의 정본은 info.json — flat-playlist 는 채널에서 NA 를 준다
                 up = info.get("upload_date") or v["upload_date"] or "00000000"
                 if since and up <= since:
-                    rep["skipped"].append(f"{vid} (워터마크 이전: {up})")
-                    continue
+                    # 목록은 업로드일 역순이라 여기부터는 전부 since 이전이다
+                    rep["skipped"].append(f"{vid} (워터마크 이전: {up}) — 이후 목록 생략")
+                    break
 
                 dur = int(info.get("duration") or v["duration"] or 0)
                 kind, lang = pick_caption(info, langs)

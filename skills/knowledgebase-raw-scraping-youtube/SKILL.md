@@ -7,7 +7,7 @@ description: >-
   타임스탬프를 남겨 사람이 원본 영상의 그 지점으로 돌아갈 수 있게 한다.
   "유튜브 채널 스크립트 긁어와", "영상 자막 지식베이스에 적재", "youtube transcript 수집" 같은 요청에 쓰고
   `/knowledgebase-raw-scraping-youtube` 으로도 호출한다. **지식 베이스(`schema/rules.md`)가 먼저 있어야 한다** —
-  없으면 `knowledgebase-setup` 을 부른다.
+  없으면 `knowledgebase-setup` 을 부른다. 원천을 집지 않은 "raw 데이터 수집해줘"는 상위 `knowledgebase-raw-scraping` 이 이 스킬을 부른다.
 ---
 
 # knowledgebase-raw-scraping-youtube — 유튜브 스크립트 적재
@@ -19,13 +19,13 @@ description: >-
 ## 이 스킬의 자리
 
 ```
-[나중에] /자료수집  (상위 오케스트레이터 — 아직 없음)
+/knowledgebase-raw-scraping  (상위 — "raw 데이터 수집해줘")
    ├─ Skill▶ knowledgebase-raw-scraping-github
    ├─ Skill▶ knowledgebase-raw-scraping-youtube   ← 이 스킬
    └─ Skill▶ (예정) slack · figma · db · paste
 ```
 
-`.meta.json` 공통 칸과 워터마크 형식은 `knowledgebase-raw-scraping-github` 와 **같다**(`source` 값만 `youtube`). 상위 스킬이 생겨도 형식 통일 작업이 없게 맞춰 둔 것.
+`.meta.json` 공통 칸과 워터마크 형식은 `knowledgebase-raw-scraping-github` 와 **같다**(`source` 값만 `youtube`). 상위 스킬이 두 원천의 결과를 그대로 합칠 수 있게 맞춰 둔 것.
 
 ## 선행: yt-dlp
 
@@ -83,6 +83,8 @@ cat <KB_ROOT>/state/youtube-watermark.json 2>/dev/null
 
 채널 링크를 사용자에게 받는다(`@handle` · `/channel/UC…` · `/c/…` · 재생목록 전부 가능).
 
+**상위 호출일 때**(args 가 `상위 호출(knowledgebase-raw-scraping)` 로 시작): 채널을 묻지 않고 args 의 `대상`(워터마크의 채널 URL)을 쓴다. `--dry-run` 은 새 영상이 있을 때만 돌리고, 보고는 §3 형식의 **적재 요약 + 후보 목록만** 돌려준다.
+
 ### 1. 먼저 `--dry-run` — 자막이 있는지부터 본다
 
 `info.json` 에 `subtitles`(수동)·`automatic_captions`(자동) 목록이 들어오므로 **자막을 받지 않고도 유무를 안다.** dry-run 은 영상당 정보 추출 1회뿐이다.
@@ -111,6 +113,12 @@ python3 $SKILL/scripts/scrape_youtube.py --kb <KB_ROOT> --channel <URL> \
 
 - **파일은 불변**: 영상 스크립트는 나중에 바뀌지 않으므로 이미 있는 파일은 **건너뛴다**(덧붙이지도 않는다). 수동 자막이 나중에 추가된 경우만 `-manual` 파일을 **따로** 만들고, 기존 자동 자막 파일은 **지우지 않는다**(그걸 가리키는 인용이 거짓이 되므로).
 - **증분**: `state/youtube-watermark.json` 의 채널별 마지막 업로드일 이후만.
+- **워터마크는 "받은 영상 중 가장 최신 업로드일"이다 — 옛 영상은 증분으로 절대 채워지지 않는다.** 첫 수집을 `--limit 50`(기본)으로 돌리면 최신 50개만 들어오고, 그 뒤로는 워터마크보다 새 영상만 받는다. 채널 전체를 받으려면 첫 수집에서 `--limit` 을 채널 영상 수 이상으로 주거나, 나중에 **백필**한다:
+  ```bash
+  python3 $SKILL/scripts/scrape_youtube.py --kb <KB_ROOT> --channel <URL> --since 19000101 --limit <채널 영상 수>
+  ```
+  이미 있는 파일은 건너뛰므로 중복이 생기지 않고, 워터마크는 그대로 최신값을 유지한다. 영상 수는 `yt-dlp --flat-playlist --print id <URL>/videos | wc -l` 로 먼저 센다. 수백 개면 오래 걸리니 백그라운드로 돌린다.
+- **영상 탭(`/videos`)만 읽는다.** 채널 URL만 주면 `/videos` 를 붙인다 — 라이브(`/streams`)는 URL에 직접 지정해야 들어온다.
 - **타임스탬프 유지**: 모든 줄에 `[MM:SS]`. 이게 사람이 원본으로 돌아가는 유일한 길이고, `[src:n]` 과 함께 "영상 12분 34초"를 가리키는 좌표가 된다.
 - 롤링 중복 줄·타이밍 태그는 파싱에서 제거한다(자동 자막은 같은 줄을 2~3번 반복해 내려준다).
 - **자동 '번역' 트랙은 받지 않는다.** 유튜브는 `ko-en`(영어에서 번역한 한국어)처럼 `<목표>-<원본>` 으로 주는데, 번역은 ASR 위에 기계 번역을 한 겹 더 얹은 것이라 숫자·고유명사가 **두 번** 깨진다. `ko-orig`·`ko-KR` 같은 원본 변종은 받는다.

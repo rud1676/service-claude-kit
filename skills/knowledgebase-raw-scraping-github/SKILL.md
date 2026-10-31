@@ -6,7 +6,7 @@ description: >-
   워터마크로 증분 수집해 두 번 돌려도 같은 결과를 만든다. 적재 후 **어느 페이지를 새로 만들/갱신해야 하는지 후보만 보고**하며
   페이지를 자동 생성하지 않는다. "깃허브에서 raw 긁어와", "이슈·PR 지식베이스에 적재해줘", "github 원본 수집" 같은 요청에 쓰고
   `/knowledgebase-raw-scraping-github` 으로도 호출한다. **지식 베이스(`schema/rules.md`)가 이미 있어야 동작한다** —
-  없으면 `knowledgebase-setup` 을 먼저 부른다.
+  없으면 `knowledgebase-setup` 을 먼저 부른다. 원천을 집지 않은 "raw 데이터 수집해줘"는 상위 `knowledgebase-raw-scraping` 이 이 스킬을 부른다.
 ---
 
 # knowledgebase-raw-scraping-github — GitHub 원본 적재
@@ -18,15 +18,13 @@ description: >-
 ## 이 스킬의 자리
 
 ```
-[나중에] /자료수집  (상위 오케스트레이터 — 아직 없음)
+/knowledgebase-raw-scraping  (상위 — "raw 데이터 수집해줘")
    ├─ Skill▶ knowledgebase-raw-scraping-github   ← 이 스킬 (GitHub)
-   ├─ Skill▶ (예정) …-slack        채널·스레드
-   ├─ Skill▶ (예정) …-figma        기획 프레임·코멘트
-   ├─ Skill▶ (예정) …-db           운영 DB 조회 결과 집계
-   └─ Skill▶ (예정) …-paste        카톡·통화·유튜브처럼 기계가 못 읽는 것의 수동 입구
+   ├─ Skill▶ knowledgebase-raw-scraping-youtube  자막·설명란
+   └─ Skill▶ (예정) slack · figma · db · paste
 ```
 
-**지금은 혼자 쓴다.** 원천이 둘 이상 되면 상위 "자료수집" 스킬이 생겨, 워터마크·중복 차단·보고 형식을 공유하고 원천별 스킬을 블록으로 부르게 된다. 그래서 이 스킬의 **상태 파일·메타 형식·보고 형식은 원천 이름만 바뀌면 그대로 재사용되도록** 설계해 둔다(§상태와 메타).
+**혼자도, 상위 아래서도 쓴다.** "깃허브만" 같은 원천 지정 요청은 이 스킬로 바로 오고, 원천을 안 집은 "raw 수집"은 상위 `knowledgebase-raw-scraping` 이 이 스킬을 부른다. 상태 파일·메타 형식·보고 형식은 원천 이름만 바뀌면 그대로 재사용되도록 맞춰 둔다(§상태와 메타).
 
 ## 긁는 것 / 안 긁는 것
 
@@ -40,7 +38,7 @@ description: >-
 | 릴리스 노트 | ✅ | 변경의 의미를 사람이 정리한 글 |
 | 한 줄 커밋 (`fix: typo`) | ❌ | 지식이 없다. 노이즈만 늘린다 |
 | 머지 커밋 · 봇 커밋 | ❌ | 기계가 만든 글 |
-| **소스 코드** | ❌ | 언제든 다시 읽으면 확인된다 → 워크스페이스 `wiki/`·코드위키의 일 |
+| **소스 코드** | ❌ | 언제든 다시 읽으면 확인된다 → 워크스페이스 `context/`·코드위키의 일 |
 | repo의 `*.md` 문서 | ❌ (기본), opt-in | 코드와 함께 버전 관리되니 다시 읽으면 된다. **삭제·대체될 예정인 기획 md만** 사람이 지정해 긁는다 |
 
 > **코드를 긁지 않는 이유**를 꼭 이해할 것: `raw/`는 "그 시점의 사진"이고 페이지는 거기에 출처를 건다. 코드는 매주 바뀌므로, 코드를 `raw/`에 넣으면 **출처 표기가 다음 주에 전부 거짓**이 된다. 코드에 박힌 정책값(계산식·상수·임계값)이 필요하면 `raw/`에 복사하는 대신 `concept`/`spec` 페이지에서 **파일:줄로 인용**하고, 그 값이 *왜 그 값인지*의 근거만 `raw/`(사람이 쓴 글)에서 찾는다.
@@ -56,6 +54,8 @@ cat <KB_ROOT>/state/github-watermark.json 2>/dev/null   # 지난 수집 지점
 ```
 
 대상 repo 목록을 사용자에게 확인한다. 워크스페이스라면 `repository/*` 의 각 repo `origin` 에서 뽑아 제안한다.
+
+**상위 호출일 때**(args 가 `상위 호출(knowledgebase-raw-scraping)` 로 시작): 대상 확인과 dry-run 승인을 건너뛰고(상위가 계획을 이미 보여 줬다) args 의 `대상` 을 그대로 쓴다. 보고는 §2 형식의 **적재 요약 + 후보 목록만** 돌려준다 — 합치기와 사용자 안내는 상위가 한다.
 
 ### 1. 적재 — 스크립트가 한다
 
@@ -123,7 +123,7 @@ python3 $SKILL/scripts/scrape_github.py \
 }
 ```
 
-`state/` 는 기계가 쓰는 칸이니 `schema/types.json` 의 `lint_ignore` 에 `state/**` 를 넣어 둔다.
+`state/` 는 기계가 쓰는 칸이다. 린트는 `wiki/` 아래만 읽으므로 따로 제외할 필요가 없다.
 
 ## 주의점
 
