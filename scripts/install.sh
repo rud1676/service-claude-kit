@@ -289,12 +289,12 @@ inject_block "$CLAUDE_MD" \
 rm -f "$CFG_TMP"
 
 # --- 워크스페이스 폴더 스캐폴딩 (없을 때만 생성. 워크스페이스 자체는 git 아님) ---
-if [[ ! -f "$TARGET/wiki/README.md" ]]; then
-  mkdir -p "$TARGET/wiki"
-  cat > "$TARGET/wiki/README.md" <<'EOF'
-# `wiki/` — 프로젝트 지식 위키 (인덱스)
+if [[ ! -f "$TARGET/context/README.md" ]]; then
+  mkdir -p "$TARGET/context"
+  cat > "$TARGET/context/README.md" <<'EOF'
+# `context/` — 프로젝트 맥락 (인덱스)
 
-`wiki/{도메인}/*.md` 는 코드만 봐선 알 수 없는 프로젝트 지식(분석·결정·기획·동작원리)을 담는다.
+`context/{도메인}/*.md` 는 코드만 봐선 알 수 없는 프로젝트 지식(분석·결정·기획·동작원리)을 담는다.
 이 문서는 그 목차이자 진입점이다. (관리 규칙은 프로젝트 `CLAUDE.md`, 문서 생성은 `explain` 스킬)
 
 ## 도메인 목차
@@ -303,7 +303,7 @@ if [[ ! -f "$TARGET/wiki/README.md" ]]; then
 |---|---|
 | _(아직 없음)_ | 새 도메인을 만들면 여기에 한 줄 추가 |
 EOF
-  echo "wiki 시드 생성 → $TARGET/wiki/README.md"
+  echo "context 시드 생성 → $TARGET/context/README.md"
 fi
 if [[ ! -f "$TARGET/study/README.md" ]]; then
   mkdir -p "$TARGET/study"
@@ -311,7 +311,7 @@ if [[ ! -f "$TARGET/study/README.md" ]]; then
 # `study/` — 내 학습 기록
 
 "이 함수/개념 어떻게 동작해?"처럼 내가 배우려고 물어본 것을 담는 곳.
-프로젝트 진실인 `wiki/`와 목적이 달라 섞지 않는다(서로 승격 안 함).
+프로젝트 진실인 `context/`와 목적이 달라 섞지 않는다(서로 승격 안 함).
 EOF
   echo "study 시드 생성 → $TARGET/study/README.md"
 fi
@@ -322,7 +322,7 @@ if [[ ! -f "$TARGET/decision-log/README.md" ]]; then
 
 판단이 갈렸거나 대안을 버린 결정을 시점별로 남기는 append-only 아카이브.
 "무엇을 택했고 어떤 대안을 왜 버렸나 / 아직 미결이면 왜 미결인가"가 핵심.
-상태(미결/확정)를 표기하고 `wiki/` 문서와 상호 링크한다.
+상태(미결/확정)를 표기하고 `context/` 문서와 상호 링크한다.
 
 파일명: `<YYYY-MM-DD>-<주제>.md` · 포맷과 작성 시점은 `explain` 스킬 참고.
 EOF
@@ -346,7 +346,7 @@ if [[ ! -f "$TARGET/plan/README.md" ]]; then
   cat > "$TARGET/plan/README.md" <<'EOF'
 # `plan/` — 임시 작업 맥락
 
-큰 작업의 임시 계획·맥락을 둔다. 작업이 끝나면 삭제한다. (영구 지식은 `wiki/`)
+큰 작업의 임시 계획·맥락을 둔다. 작업이 끝나면 삭제한다. (영구 지식은 `context/`)
 EOF
   echo "plan 시드 생성 → $TARGET/plan/README.md"
 fi
@@ -373,7 +373,7 @@ if [[ "$copied" -eq 1 ]]; then
   ls -1 "$DEST/hooks" 2>/dev/null | sed 's/^/  - /' || true
   echo
   echo "생성/갱신: CLAUDE.md(context-mgmt + config 블록) · settings.json(훅 배선)"
-  echo "워크스페이스 폴더: wiki/ study/ decision-log/ repository/ plan/ claude-log/"
+  echo "워크스페이스 폴더: context/ study/ decision-log/ repository/ plan/ claude-log/"
   echo "(이 워크스페이스 자체는 git 저장소가 아닙니다. 코드 git은 repository/ 안에서.)"
   echo "이제 각 스킬 파일의 '프로젝트 커스터마이징' 주석(cloudId·프로젝트키·DDNS·포트 등)을 채우세요."
   if [[ "$FORCE" != "--force" ]]; then
