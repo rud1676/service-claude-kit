@@ -49,7 +49,7 @@ SCK_PMTOOL=jira|ghproject|none  SCK_ENV=remote|local  ./scripts/install.sh mypro
 npx skills add rud1676/service-claude-kit
 ```
 
-단, 이 채널은 **`SKILL.md`만** 설치한다 — `install.sh`가 하는 **훅 배선·`CLAUDE.md` 규칙 주입·워크스페이스 폴더(wiki/decision-log/repository) 스캐폴딩은 하지 않는다.** 그리고 `worktree`·`jiraticket`·`figma-depth-find`는 이 워크스페이스 구조와 `CLAUDE.md` 규칙에 엮여 있어, 낱개로 설치하면 반쪽만 동작한다. **풀 킷 경험은 `install.sh`가 정본**이고, skills.sh는 "스킬만 떼어 보고 싶을 때"의 보조 채널로 둔다.
+단, 이 채널은 **`SKILL.md`만** 설치한다 — `install.sh`가 하는 **훅 배선·`CLAUDE.md` 규칙 주입·워크스페이스 폴더(context/decision-log/repository) 스캐폴딩은 하지 않는다.** 그리고 `worktree`·`jiraticket`·`figma-depth-find`는 이 워크스페이스 구조와 `CLAUDE.md` 규칙에 엮여 있어, 낱개로 설치하면 반쪽만 동작한다. **풀 킷 경험은 `install.sh`가 정본**이고, skills.sh는 "스킬만 떼어 보고 싶을 때"의 보조 채널로 둔다.
 
 ## 왜 이 스킬들이 필요한가 (Why These Skills Exist)
 
@@ -65,13 +65,13 @@ npx skills add rud1676/service-claude-kit
 
 **문제**: diff를 쓱 훑고 "이해했다"고 넘어가지만, 그건 대개 *낯익음*을 *이해*로 착각한 것이다. 이해 없이 위임만 쌓이면 자기 코드의 흐름에 낄 수 없게 된다.
 
-**해결**: [`explain`](./skills/explain/SKILL.md). 코드만 봐선 안 보이는 것 — 왜 이 결정인가 / 무엇을 버렸나 / 무슨 가정인가 / 어디까지 영향인가 — 을 복원해 `wiki/`에 남긴다. AI의 생산 속도에 인간의 이해 속도를 맞추는 브레이크.
+**해결**: [`explain`](./skills/explain/SKILL.md). 코드만 봐선 안 보이는 것 — 왜 이 결정인가 / 무엇을 버렸나 / 무슨 가정인가 / 어디까지 영향인가 — 을 복원해 `context/`에 남긴다. AI의 생산 속도에 인간의 이해 속도를 맞추는 브레이크.
 
 ### #3: 요구사항이 바뀔 때 낡은 전제로 추측한다
 
 **문제**: 운영 앱에 요구사항이 바뀌어 들어오면, "지금 코드로 가능한가 / 정확히 뭘 바꿔야 하나"를 **현재 실제 버전** 기준으로 판별해야 한다. 그 현재-상태 지식이 없으면 AI도 사람도 추측하게 된다.
 
-**해결**: `CLAUDE.md`의 **항상-온 규칙**(설치 시 주입되는 `context-mgmt` 블록)이 `wiki/`·`decision-log/`를 append-only로 갱신하게 강제해, **현재 상태의 진실**을 유지한다. 그래서 변경을 현실에 맵핑할 수 있다. jiraticket·worktree의 분석 단계가 실제 코드를 읽어 변경안을 `파일:줄`로 근거화하고, **가능성 판단·소통은 개발자가** 한다(= 루프 유지).
+**해결**: `CLAUDE.md`의 **항상-온 규칙**(설치 시 주입되는 `context-mgmt` 블록)이 `context/`·`decision-log/`를 append-only로 갱신하게 강제해, **현재 상태의 진실**을 유지한다. 그래서 변경을 현실에 맵핑할 수 있다. jiraticket·worktree의 분석 단계가 실제 코드를 읽어 변경안을 `파일:줄`로 근거화하고, **가능성 판단·소통은 개발자가** 한다(= 루프 유지).
 
 ### #4: 새 요구사항이 티켓·코드와 따로 논다
 
@@ -105,9 +105,15 @@ npx skills add rud1676/service-claude-kit
 
 ### #9: 사람이 정한 것(결정·정의·수치)이 대화에 흘러 사라진다
 
-**문제**: 코드와 `wiki/`로 복원되는 건 **코드를 읽으면 확인되는 것**뿐이다. 대표가 카톡으로 정한 정책, 도메인 용어의 계산 기준, 광고 단가, "그때 왜 그 숫자로 했는지" — 이것들은 원본이 사라지면 **확인할 길이 자체가 없다.** 그래서 에이전트마다 다르게 추측하고, 반년 뒤엔 사람도 못 되돌린다. 더 나쁜 건 같은 정책이 두 곳에 각각 수정돼 **어느 쪽이 기준인지 사라지는** 것이다.
+**문제**: 코드와 `context/`로 복원되는 건 **코드를 읽으면 확인되는 것**뿐이다. 대표가 카톡으로 정한 정책, 도메인 용어의 계산 기준, 광고 단가, "그때 왜 그 숫자로 했는지" — 이것들은 원본이 사라지면 **확인할 길이 자체가 없다.** 그래서 에이전트마다 다르게 추측하고, 반년 뒤엔 사람도 못 되돌린다. 더 나쁜 건 같은 정책이 두 곳에 각각 수정돼 **어느 쪽이 기준인지 사라지는** 것이다.
 
 **해결**: [`knowledgebase-setup`](./skills/knowledgebase-setup/SKILL.md) — 코드로 확인 안 되는 사실만 담는 **별도 git repo**를 세운다. `raw/`는 추가만(원본이 바뀌면 출처 표기가 거짓이 된다), 모든 문장에 **사실 등급**(`[확인:…]`/`[src:n]`/`[추론]`)과 출처 번호를 달고, **확정은 결정권자만**(에이전트는 못 올린다), 검사는 린트가 한다. 규칙은 산문으로 두지 않고 `types.json` 한 벌을 더 둬서 **상태값이 갈라지면 린트가 실패**하게 만든다. 회사 상황(영역·확정 입구·운전 방식)은 `grill-me` 인터뷰로 8갈림을 확정해 `schema/`에 박는다. 원본 적재는 원천별 스킬이 맡는다 — [`…-github`](./skills/knowledgebase-raw-scraping-github/SKILL.md)(사람이 쓴 글만. 코드는 다시 읽으면 확인되므로 안 긁는다) · [`…-youtube`](./skills/knowledgebase-raw-scraping-youtube/SKILL.md)(채널 스크립트. 자동 자막은 기계가 들은 것이라 숫자·고유명사를 `[추론]`으로 묶는다).
+
+### #10: "화면 확인했어요"를 말로만 남겨, 리뷰어가 PR·배포를 판단할 근거가 없다
+
+**문제**: 로딩 순서·단계별 표시처럼 **눈으로 봐야 하는 변경**은 diff 만으로 맞는지 알 수 없다. AI 가 "브라우저로 확인했다"고 말해도 무엇을 어떤 조건에서 봤는지, 캡처는 실제로 그 상태였는지 남지 않는다. 게다가 캡처를 위해 응답을 늦추면 그 숫자가 "속도"로 오인되고, 빠른 서버에선 캡처가 상태 전환을 못 따라간다.
+
+**해결**: [`browser-e2e`](./skills/browser-e2e/SKILL.md). Playwright 로 실제 화면을 띄워 **측정 실행(개입 없음)과 캡처 실행(필요 시 응답 붙잡기·지연)을 분리**하고, 캡처는 직접 열어 확인한 뒤 **단계별 캡처 + 요청 시간표 + 기대/결과 표 + "이 테스트로 알 수 없는 것"** 을 결과 문서로 남긴다. 머지 전엔 로컬(목업 로그인), 머지 후엔 개발서버(배포 완료 확인 후 실제 로그인). 로그인 리다이렉트 경합 같은 함정은 헬퍼(`scripts/e2e-kit.cjs`)가 막는다.
 
 ## 개념 정리
 
@@ -115,8 +121,8 @@ npx skills add rud1676/service-claude-kit
 
 이 킷은 "에이전트가 알아야 할 것"을 두 층으로 나눈다. 무엇을 어디에 둘지의 기준은 **"항상 켜져 있어야 하나, 특정 작업일 때만 필요하나"**다.
 
-- **항상-온 규칙 — `CLAUDE.md`** (`base/CLAUDE.block.md`가 설치 시 주입): 작업 종류와 무관하게 **늘 지켜야 하는 계약**. 폴더 구조, wiki/decision-log 갱신 규칙, "추적 메타는 답변 본문에 출력 금지", "커밋·PR은 사용자 요청 시만". 이건 매 컨텍스트에 항상 있어야 의미가 있어서, 스킬로 빼면 오히려 깨진다.
-- **필요할 때 스킬 — `skills/*/SKILL.md`**: "이 작업을 하면 이 절차를 따르라"는 **절차**. 관련 작업이 올 때만 로드돼 컨텍스트를 가볍게 유지한다. (explain·worktree·jiraticket·gh-project·figma-depth-find·issue-mgmt·acceptance-criteria·orchestrate·grill-me·unit-test·scenario-test·make-plan)
+- **항상-온 규칙 — `CLAUDE.md`** (`base/CLAUDE.block.md`가 설치 시 주입): 작업 종류와 무관하게 **늘 지켜야 하는 계약**. 폴더 구조, context/decision-log 갱신 규칙, "추적 메타는 답변 본문에 출력 금지", "커밋·PR은 사용자 요청 시만". 이건 매 컨텍스트에 항상 있어야 의미가 있어서, 스킬로 빼면 오히려 깨진다.
+- **필요할 때 스킬 — `skills/*/SKILL.md`**: "이 작업을 하면 이 절차를 따르라"는 **절차**. 관련 작업이 올 때만 로드돼 컨텍스트를 가볍게 유지한다. (explain·worktree·jiraticket·gh-project·figma-depth-find·issue-mgmt·acceptance-criteria·orchestrate·grill-me·unit-test·scenario-test·browser-e2e·make-plan)
 
 즉 CLAUDE.md의 규칙은 수동적 설정이 아니라 그 자체로 **#3을 막는 Fix 장치**다.
 
@@ -142,11 +148,12 @@ npx skills add rud1676/service-claude-kit
 │   ├── grill-me/           # 계획/설계를 한 번에 한 질문씩 파고드는 소크라테스 인터뷰 (Matt Pocock, MIT)
 │   ├── unit-test/          # API 1개의 단위 테스트를 정당화 규율로 작성 → 브리핑·문답 (고쳐 쓰는 참고 구현)
 │   ├── scenario-test/      # 여러 API를 순서대로 호출하는 유저 플로우(시나리오) 테스트 → 브리핑·문답
+│   ├── browser-e2e/        # 브라우저로 실제 화면 E2E 확인 → 단계별 캡처·요청 시간표·기대/결과 문서 (scripts/e2e-kit.cjs 헬퍼)
 │   └── make-plan/          # plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식으로 작성 (상위 스킬 plan 단계 공용)
 ├── scripts/                # 이 repo의 스크립트 모음
 │   ├── install.sh          # 대상 프로젝트에 워크스페이스를 설치(환경 질문 포함)
 │   └── hooks/              # 세션 추적 훅(python) → 설치 시 .claude/hooks/로 복사
-│       ├── context-checkpoint.py  # N프롬프트마다 wiki 갱신 리마인더
+│       ├── context-checkpoint.py  # N프롬프트마다 context 갱신 리마인더
 │       ├── log-read.py            # Read/Grep/Glob + Bash 실행 기록 → claude-log/
 │       └── summarize-session.py   # 세션 요약·토큰·참고문서·탐색집계 → claude-log/
 ├── base/                   # install.sh가 target .claude/에 넣는 나머지(비-스크립트)
@@ -166,7 +173,7 @@ npx skills add rud1676/service-claude-kit
 {프로젝트}/                 # 워크스페이스 — 그 자체는 git 저장소가 아니다
 ├── .claude/               # agents · skills · hooks · settings.json
 ├── CLAUDE.md              # context-mgmt + config(설치 시 선택값) 블록 주입됨
-├── wiki/                  # 프로젝트 지식 위키   (오래 남는 팀 지식)
+├── context/               # 프로젝트 맥락        (오래 남는 팀 지식)
 ├── study/                 # 내 학습 기록          (개인 이해용)
 ├── decision-log/          # 결정 아카이브         (왜 이걸 택했나 / 무엇을 버렸나)
 ├── plan/                  # 임시 작업 맥락        (완료 시 삭제)
@@ -178,8 +185,8 @@ npx skills add rud1676/service-claude-kit
 
 기준은 **누구를 위한 것이고, 얼마나 오래 남을 것인가**다.
 
-- **`wiki/`** — 코드만 봐선 알 수 없는 프로젝트의 진실(도메인 동작·확정된 결정·기획 변경). `wiki/{도메인}/*.md` + `wiki/README.md` 인덱스. `explain` 스킬이 관리하고, 갱신은 덮어쓰기가 아니라 `## 후속 (날짜)`로 이어 붙인다. 모든 주장에 `파일:줄` 근거와 작성 날짜·대상 커밋을 단다.
-- **`study/`** — "이거 어떻게 동작해?"처럼 내가 배우려고 물어본 것. `wiki/`(프로젝트 진실)와 목적이 달라 섞지 않는다.
+- **`context/`** — 코드만 봐선 알 수 없는 프로젝트의 진실(도메인 동작·확정된 결정·기획 변경). `context/{도메인}/*.md` + `context/README.md` 인덱스. `explain` 스킬이 관리하고, 갱신은 덮어쓰기가 아니라 `## 후속 (날짜)`로 이어 붙인다. 모든 주장에 `파일:줄` 근거와 작성 날짜·대상 커밋을 단다.
+- **`study/`** — "이거 어떻게 동작해?"처럼 내가 배우려고 물어본 것. `context/`(프로젝트 진실)와 목적이 달라 섞지 않는다.
 - **`decision-log/`** — 판단이 갈렸거나 대안을 버린 결정을 `<YYYY-MM-DD>-<주제>.md`로 append-only 기록. "무엇을 택했고 어떤 대안을 왜 버렸나 / 아직 미결이면 왜 미결인가"가 핵심. 매번이 아니라 **판단이 갈렸을 때만**.
 - **`plan/`** — 큰 작업의 임시 계획·메모. 작업이 끝나면 삭제한다.
 - **`claude-log/`** — 훅이 세션마다 `<session_id>.md`를 자동 생성·갱신(읽기 기록·요약·토큰·탐색 집계). 사람이 직접 쓰지 않는다.
@@ -191,7 +198,7 @@ npx skills add rud1676/service-claude-kit
 
 - **CLAUDE.md** — `<!-- BEGIN/END service-kit:context-mgmt -->` 와 `service-kit:config` 마커로 감싼 블록만 삽입/갱신한다. 파일이 없으면 생성, 마커가 있으면 그 블록만 교체, 마커 없는 기존 파일이면 기존 내용을 그대로 둔 채 덧붙인다. 재실행해도 블록은 하나만 유지된다(멱등).
 - **settings.json** — 기존 `permissions`·`env`·다른 훅을 보존하고 `hooks`만 union 병합한다. `command` 문자열로 중복을 판단하므로 재실행해도 훅이 중복 배선되지 않는다.
-- **워크스페이스 폴더**(`wiki/ study/ decision-log/ repository/ plan/ claude-log/`)는 각 README 시드와 함께 **없을 때만** 생성한다.
+- **워크스페이스 폴더**(`context/ study/ decision-log/ repository/ plan/ claude-log/`)는 각 README 시드와 함께 **없을 때만** 생성한다.
 - **git은 건드리지 않는다** — 워크스페이스에 `git init`도, 루트 `.gitignore`도 만들지 않는다.
 
 `--force`는 `.claude/` 안 파일 복사에만 영향을 준다. **CLAUDE.md와 settings.json은 `--force`와 무관하게 절대 통째로 덮지 않는다.**

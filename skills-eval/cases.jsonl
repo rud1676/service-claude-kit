@@ -30,7 +30,7 @@
 
 // ══ explain ═════════════════════════════════════════════
 {"prompt": "이 PR 왜 이렇게 짰는지 설명 문서로 남겨줘", "expect": "explain", "note": "[canonical] 결정 복원+문서화"}
-{"prompt": "방금 만든 거 정리해서 wiki에 남겨줘", "expect": "explain", "note": "[canonical] 변경 정리"}
+{"prompt": "방금 만든 거 정리해서 context에 남겨줘", "expect": "explain", "note": "[canonical] 변경 정리"}
 {"prompt": "이 diff 머지 전에 결정 배경이랑 버린 대안까지 정리해줘", "expect": "explain", "note": "[para] 리뷰 전 점검"}
 {"prompt": "이 함수가 뭐 하는지 한 줄로 설명해줘", "expect": "none", "note": "[neg] 단순 코드설명 — 문서화 아님"}
 {"prompt": "이 에러 왜 나는지 설명 좀 해줄래", "expect": "none", "note": "[neg] 디버깅 — explain 아님"}
@@ -83,7 +83,7 @@
 {"prompt": "우리 공통기억 저장소 셋업해줘 — 출처랑 사실 등급 붙여서", "expect": "knowledgebase-setup", "note": "[canonical] 등급·출처 언급"}
 {"prompt": "knowledge base 레포 하나 세우고 schema 규칙 박아줘", "expect": "knowledgebase-setup", "note": "[para] 영문 혼용"}
 {"prompt": "지식베이스 타입이랑 영역 목록 다시 정하자", "expect": "knowledgebase-setup", "note": "[para] 개정 모드"}
-{"prompt": "방금 만든 거 정리해서 wiki에 남겨줘", "expect": "explain", "note": "[collide] 워크스페이스 wiki 문서화는 explain"}
+{"prompt": "방금 만든 거 정리해서 context에 남겨줘", "expect": "explain", "note": "[collide] 워크스페이스 context 문서화는 explain"}
 {"prompt": "이 PR 결정 배경까지 문서로 남겨줘", "expect": "explain", "note": "[collide] 변경 설명은 explain"}
 {"prompt": "README에 설치 방법 좀 추가해줘", "expect": "none", "note": "[neg] 일반 문서 수정"}
 {"prompt": "노션에 회의록 정리해줘", "expect": "none", "note": "[neg] 외부 도구 문서작업"}
@@ -103,3 +103,17 @@
 {"prompt": "깃허브 이슈 긁어서 raw에 넣어줘", "expect": "knowledgebase-raw-scraping-github", "note": "[collide] 원천이 github"}
 {"prompt": "이 유튜브 영상 요약해줘", "expect": "none", "note": "[neg] 요약 — 적재 아님"}
 {"prompt": "유튜브 영상 다운로드해줘", "expect": "none", "note": "[neg] 영상 파일 다운로드는 범위 밖"}
+
+// ══ knowledgebase-raw-scraping (상위 적재) ═════════════
+{"prompt": "/knowledgebase-raw-scraping", "expect": "knowledgebase-raw-scraping", "note": "[canonical] 슬래시"}
+{"prompt": "raw 데이터 수집해줘", "expect": "knowledgebase-raw-scraping", "note": "[canonical] 원천 미지정"}
+{"prompt": "지식베이스 원본 전부 긁어와", "expect": "knowledgebase-raw-scraping", "note": "[para] 전부"}
+{"prompt": "깃허브만 raw 수집해줘", "expect": "knowledgebase-raw-scraping-github", "note": "[collide] 원천 지정은 원천 스킬"}
+
+// ══ browser-e2e ═════════════════════════════════════════
+{"prompt": "/browser-e2e", "expect": "browser-e2e", "note": "[canonical] 슬래시"}
+{"prompt": "이거 브라우저로 end to end 테스트하고 캡처해서 md 문서로 남겨줘", "expect": "browser-e2e", "note": "[canonical] 캡처 문서"}
+{"prompt": "머지했으니 개발서버에서 화면 확인하고 로딩 나오는 거 캡처 남겨줘", "expect": "browser-e2e", "note": "[para] 개발서버 확인"}
+{"prompt": "로컬에서 띄워서 로딩 단계별로 스크린샷 찍어 테스트 결과 정리해줘", "expect": "browser-e2e", "note": "[para] 로컬"}
+{"prompt": "주문하고 결제하고 환불하는 API 흐름 통합 테스트 코드 짜줘", "expect": "scenario-test", "note": "[collide] API 플로우 테스트 코드는 scenario-test"}
+{"prompt": "우리 프로젝트 playwright 버전 몇이야?", "expect": "none", "note": "[neg] playwright 언급 잡담 — 발동 금지"}

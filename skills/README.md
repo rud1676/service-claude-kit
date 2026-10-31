@@ -8,7 +8,7 @@
 - **오케스트레이터(조립) 스킬**: 스스로 밑작업을 하지 않고, **원자 스킬을 `Skill` 도구로 호출해 규칙대로 엮는다.** 상태는 스킬이 아니라 **보드/트래커(관제탑)** 에 둔다.
   → `acceptance-criteria`, `orchestrate`, `knowledgebase-setup`, (그리고 단건 워크플로 `jiraticket`·`gh-project`)
 - **원자 스킬**: 한 가지 일만 잘한다. 혼자 써도 되고, 오케스트레이터가 블록처럼 끼워 쓴다.
-  → `grill-me`, `worktree`, `explain`, `issue-mgmt`, `unit-test`, `scenario-test`, `figma-depth-find`, `make-plan`, `knowledgebase-raw-scraping-github`, `knowledgebase-raw-scraping-youtube`
+  → `grill-me`, `worktree`, `explain`, `issue-mgmt`, `unit-test`, `scenario-test`, `browser-e2e`, `figma-depth-find`, `make-plan`, `knowledgebase-raw-scraping-github`, `knowledgebase-raw-scraping-youtube`
 
 ---
 
@@ -88,6 +88,8 @@ issue-mgmt                             티켓 생성·상태전환·커밋 연�
 ```
 /unit-test          API(핸들러) 1개 단위 테스트  ─┐ 서로 규약·하네스 참조
 /scenario-test      여러 API를 순서대로 부르는 유저 플로우 테스트 ─┘
+/browser-e2e        브라우저로 실제 화면을 띄워 확인 → 단계별 캡처 + 요청 시간표 + 기대/결과 문서(docs/)
+                    (테스트 코드가 아니라 PR·배포 판단용 근거 문서. 측정 실행과 캡처 실행을 분리)
 ```
 
 #### ④ 디자인
@@ -113,13 +115,14 @@ issue-mgmt                             티켓 생성·상태전환·커밋 연�
    (수동 자막 우선, 없으면 자동(ASR). 어느 쪽인지 박아서 ASR 숫자·고유명사는
     사람이 타임스탬프를 확인하기 전까지 [추론] 으로 묶는다. yt-dlp 필요)
 
-[예정] /자료수집  상위 오케스트레이터 — 원천이 둘 이상 되면 생긴다
+/knowledgebase-raw-scraping   "raw 데이터 수집해줘" — 등록된 원천(state/ 워터마크) 전부를 차례로
    ├─ Skill▶ knowledgebase-raw-scraping-github
    ├─ Skill▶ knowledgebase-raw-scraping-youtube
    └─ Skill▶ (예정) slack · figma · db · paste(카톡·통화처럼 기계가 못 읽는 것)
+   → 적재 요약 한 장 + 원천을 합친 페이지 후보 보고. 페이지 생성·커밋 안 함
 ```
 
-> **워크스페이스 `wiki/` 와 다른 물건이다.** `wiki/`(explain 스킬)는 **코드를 읽으면 확인되는 것**,
+> **워크스페이스 `context/` 와 다른 물건이다.** `context/`(explain 스킬)는 **코드를 읽으면 확인되는 것**,
 > 지식 베이스는 **코드를 읽어도 안 나오는 것**(사람의 결정·도메인 정의·운영 수치·외부 사실)을 담는다.
 > 후자만 출처 표기·사실 등급·확정 입구가 필요하다. 경계 규칙은 `knowledgebase-setup/SKILL.md` 참고.
 
@@ -143,15 +146,17 @@ make-plan  plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식
 | **jiraticket** | 오케스트레이터(단건) | Jira 티켓 조회·선택 → 분석 → worktree로 구현 | `/jiraticket`·자연어 |
 | **gh-project** | 오케스트레이터(단건) | GitHub Projects 아이템 조회·선택 → 분석 → worktree로 구현 | `/gh-project`·자연어 |
 | **worktree** | 원자 | git 워크트리 기반 수정→검증→커밋→PR (공용 구현 절차) | 상위 호출·`/worktree` |
-| **explain** | 원자 | 변경/신규 코드를 결정·가정·파급까지 복원해 wiki에 문서화 | 자연어·상위 호출 |
+| **explain** | 원자 | 변경/신규 코드를 결정·가정·파급까지 복원해 context에 문서화 | 자연어·상위 호출 |
 | **grill-me** | 원자 | 한 번에 한 질문씩 결정 트리를 파고드는 인터뷰 | "grill me" |
 | **issue-mgmt** | 원자(절차) | 티켓 생성·상태전환·커밋/브랜치/PR 연결 규칙 | 자연어 |
 | **unit-test** | 원자 | API 1개를 실제 진입점+테스트 DB로 검증 + 이해 브리핑 | `/unit-test`·자연어 |
 | **scenario-test** | 원자 | 여러 API를 순서대로 부르는 유저 플로우 통합 테스트 | `/scenario-test`·자연어 |
+| **browser-e2e** | 원자 | 브라우저로 실제 화면을 띄워 E2E 확인 → 단계별 캡처(직접 열어 확인) + 요청 시간표 + 기대/결과 표를 결과 문서로. 로컬(목업 로그인)·개발서버(배포 완료 확인 후) | `/browser-e2e`·자연어 |
 | **figma-depth-find** | 원자(서브) | 큰 Figma 프레임을 멀티에이전트로 탐색·우리 컴포넌트 매핑 | 상위 호출·`/figma-depth-find` |
 | **make-plan** | 원자(서브) | plan·설계 문서를 "화면 → 설계" 순서의 시각적 형식(§0 화면·mermaid·결정 표)으로 작성 | 상위 호출·`/make-plan` |
 | **knowledgebase-setup** | 오케스트레이터(세팅) | 회사 지식 베이스(공통기억) git repo를 세우고 grill-me 인터뷰로 규칙(층·등급·타입·영역·린트)을 확정 | `/knowledgebase-setup`·명시 호출 |
-| **knowledgebase-raw-scraping-github** | 원자(적재) | GitHub의 사람이 쓴 글(이슈·PR·본문 있는 커밋·릴리스)을 `raw/github/`에 추가만 + 위키 후보 보고 | `/knowledgebase-raw-scraping-github`·명시 호출 |
+| **knowledgebase-raw-scraping** | 오케스트레이터(적재) | 등록된 원천 스킬(github·youtube)을 차례로 불러 `raw/`를 채우고, 원천별 후보를 합쳐 보고 | `/knowledgebase-raw-scraping`·"raw 데이터 수집해줘" |
+| **knowledgebase-raw-scraping-github** | 원자(적재) | GitHub의 사람이 쓴 글(이슈·PR·본문 있는 커밋·릴리스)을 `raw/github/`에 추가만 + 페이지 후보 보고 | `/knowledgebase-raw-scraping-github`·명시 호출 |
 | **knowledgebase-raw-scraping-youtube** | 원자(적재) | 유튜브 채널의 스크립트(자막)+설명란을 `raw/youtube/`에 추가만. 수동/자동(ASR)을 구별해 등급 상한을 걸고 타임스탬프를 남긴다 | `/knowledgebase-raw-scraping-youtube`·명시 호출 |
 
 ⛔ = 설치 시 고도화 게이트가 걸려 나온다(첫 사용 전 grill-me 고도화 필요).
